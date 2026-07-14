@@ -96,55 +96,114 @@ function renderEvolution(){
   renderStageNav();
 }
 let treeSelectedId='';
+let dexWireMode='wireless';
 function uniqueTreeEdges(){
   const seen=new Set(), edges=[];
   for(const e of DATA.evolutions){
     const a=byName(e.from),b=byName(e.to); if(!a||!b||a.id===b.id)continue;
-    const key=`${a.id}>${b.id}`; if(seen.has(key))continue; seen.add(key);edges.push({from:a.id,to:b.id});
+    const key=`${a.id}>${b.id}`;
+    if(!seen.has(key)){seen.add(key);edges.push({from:a.id,to:b.id});}
   }
   return edges;
 }
 function treeRelations(id){
   const edges=uniqueTreeEdges(), parents=new Map(), children=new Map();
-  for(const e of edges){if(!parents.has(e.to))parents.set(e.to,[]);parents.get(e.to).push(e.from);if(!children.has(e.from))children.set(e.from,[]);children.get(e.from).push(e.to);}
+  for(const e of edges){
+    if(!parents.has(e.to))parents.set(e.to,[]);parents.get(e.to).push(e.from);
+    if(!children.has(e.from))children.set(e.from,[]);children.get(e.from).push(e.to);
+  }
   const ancestors=new Set(),descendants=new Set();
   const walk=(map,start,set)=>{const q=[start];while(q.length){const cur=q.shift();for(const n of map.get(cur)||[]){if(!set.has(n)){set.add(n);q.push(n);}}}};
   walk(parents,id,ancestors);walk(children,id,descendants);
   return {edges,ancestors,descendants,related:new Set([id,...ancestors,...descendants])};
 }
+function stageLayout(list){
+  const stageGap=100/Math.max(1,stageOrder.length-1);
+  const positions=new Map();
+  for(const [si,stage] of stageOrder.entries()){
+    const ds=list.filter(d=>d.stage===stage).sort((a,b)=>a.dex_no-b.dex_no);
+    const gap=ds.length>1?82/(ds.length-1):0;
+    ds.forEach((d,i)=>positions.set(d.id,{x:si*stageGap,y:ds.length===1?50:9+i*gap,stageIndex:si,index:i,count:ds.length}));
+  }
+  return positions;
+}
+function conditionSummary(e){
+  const rows=[];
+  if(e.care_mistakes&&e.care_mistakes!=='-')rows.push(`照顧 ${e.care_mistakes}`);
+  if(e.effort&&e.effort!=='-')rows.push(`努力 ${e.effort}`);
+  if(e.battles&&e.battles!=='-')rows.push(`戰鬥 ${e.battles}`);
+  if(e.win_rate&&e.win_rate!=='-')rows.push(`勝率 ${e.win_rate}`);
+  if(e.time&&e.time!=='-')rows.push(`時間 ${e.time}`);
+  const notes=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
+  return [...rows,...notes].join('｜')||'進化';
+}
+function linePath(x1,y1,x2,y2){
+  const dx=Math.max(28,Math.abs(x2-x1)*.38);
+  return `M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`;
+}
 function drawTreeLines(){
-  const tree=$('#dexTree'),svg=$('#dexTreeLines');if(!tree||!svg)return;
-  const tr=tree.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${tr.width} ${tr.height}`);svg.innerHTML='';
+  const board=$('#dexTreeBoard'),svg=$('#dexTreeLines');if(!board||!svg)return;
+  const br=board.getBoundingClientRect();
+  svg.setAttribute('viewBox',`0 0 ${br.width} ${br.height}`);svg.innerHTML='';
   const relation=treeSelectedId?treeRelations(treeSelectedId):null;
   for(const edge of uniqueTreeEdges()){
-    const a=tree.querySelector(`[data-id="${edge.from}"]`),b=tree.querySelector(`[data-id="${edge.to}"]`);if(!a||!b)continue;
-    const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
-    let x1=ar.right-tr.left,y1=ar.top+ar.height/2-tr.top,x2=br.left-tr.left,y2=br.top+br.height/2-tr.top;
-    if(innerWidth<=760){x1=ar.left+ar.width/2-tr.left;y1=ar.bottom-tr.top;x2=br.left+br.width/2-tr.left;y2=br.top-tr.top;}
-    const dx=Math.max(22,Math.abs(x2-x1)*.45), vertical=innerWidth<=760;
-    const d=vertical?`M ${x1} ${y1} C ${x1} ${y1+28}, ${x2} ${y2-28}, ${x2} ${y2}`:`M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`;
-    const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',d);path.dataset.from=edge.from;path.dataset.to=edge.to;
-    if(relation){const active=(edge.from===treeSelectedId||relation.ancestors.has(edge.from))&&(edge.to===treeSelectedId||relation.descendants.has(edge.to)||relation.ancestors.has(edge.to));path.classList.add(active?'active':'dimmed');}
+    const a=board.querySelector(`[data-id="${edge.from}"]`),b=board.querySelector(`[data-id="${edge.to}"]`);if(!a||!b)continue;
+    const ar=a.getBoundingClientRect(),bb=b.getBoundingClientRect();
+    const x1=ar.right-br.left,y1=ar.top+ar.height/2-br.top,x2=bb.left-br.left,y2=bb.top+bb.height/2-br.top;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',linePath(x1,y1,x2,y2));path.dataset.from=edge.from;path.dataset.to=edge.to;
+    if(relation){const active=relation.related.has(edge.from)&&relation.related.has(edge.to);path.classList.add(active?'active':'dimmed');}
     svg.appendChild(path);
   }
 }
 function applyTreeSelection(id){
   treeSelectedId=id||'';const d=DATA.digimon.find(x=>x.id===treeSelectedId);const relation=d?treeRelations(d.id):null;
-  $$('.dex-tree-node').forEach(n=>{n.classList.remove('selected','related','dimmed');if(!relation)return;n.classList.toggle('selected',n.dataset.id===d.id);n.classList.toggle('related',n.dataset.id!==d.id&&relation.related.has(n.dataset.id));n.classList.toggle('dimmed',!relation.related.has(n.dataset.id));});
+  $$('.dex-map-node').forEach(n=>{
+    n.classList.remove('selected','related','dimmed');if(!relation)return;
+    n.classList.toggle('selected',n.dataset.id===d.id);
+    n.classList.toggle('related',n.dataset.id!==d.id&&relation.related.has(n.dataset.id));
+    n.classList.toggle('dimmed',!relation.related.has(n.dataset.id));
+  });
+  $$('.dex-condition').forEach(c=>{
+    c.classList.remove('active','dimmed');if(!relation)return;
+    const active=relation.related.has(c.dataset.from)&&relation.related.has(c.dataset.to);
+    c.classList.add(active?'active':'dimmed');
+  });
   const label=$('#treeSelection');if(label)label.textContent=d?`${d.name_zh}：已高亮完整前後路線`:'尚未選擇';
-  const go=$('#treeGoEvolution');if(go)go.disabled=!d;const clear=$('#treeClear');if(clear)clear.disabled=!d;drawTreeLines();
+  const go=$('#treeGoEvolution');if(go)go.disabled=!d;const clear=$('#treeClear');if(clear)clear.disabled=!d;
+  requestAnimationFrame(drawTreeLines);
 }
 function renderDex(){
   const list=filteredDigimon();
   if(!list.length){$('#dexView').innerHTML='<div class="empty">找不到符合項目</div>';return;}
-  const stages=stageOrder.filter(stage=>list.some(d=>d.stage===stage));
-  $('#dexView').innerHTML=`<section class="dex-tree-shell"><div class="dex-tree-toolbar"><strong>技能樹圖鑑</strong><span id="treeSelection" class="tree-selection">尚未選擇</span><button id="treeClear" type="button" disabled>清除路線</button><button id="treeGoEvolution" type="button" disabled>查看進化條件</button><span class="dex-tree-hint">點一下高亮路線；再點同一隻可清除</span></div><div id="dexTree" class="dex-tree"><svg id="dexTreeLines" class="dex-tree-lines" aria-hidden="true"></svg>${stages.map(stage=>{const ds=list.filter(d=>d.stage===stage);return `<section class="dex-tree-stage"><h2>${stage}</h2><div class="dex-tree-stage-list">${ds.map(d=>`<button class="dex-tree-node" data-id="${d.id}" type="button">${sprite(d,'dex-sprite')}<span class="dex-no">#${padNo(d.dex_no)}</span><strong>${esc(d.name_zh)}</strong><small>${esc(d.attribute)}</small></button>`).join('')}</div></section>`;}).join('')}</div></section>`;
-  $$('.dex-tree-node').forEach(n=>n.onclick=()=>applyTreeSelection(treeSelectedId===n.dataset.id?'':n.dataset.id));
+  const positions=stageLayout(list);
+  const conditions=[];
+  if(dexWireMode==='wired'){
+    const grouped=new Map();
+    DATA.evolutions.forEach((e,idx)=>{
+      const a=byName(e.from),b=byName(e.to);if(!a||!b||!positions.has(a.id)||!positions.has(b.id))return;
+      const key=`${a.id}>${b.id}`;const n=grouped.get(key)||0;grouped.set(key,n+1);
+      const pa=positions.get(a.id),pb=positions.get(b.id);
+      const midX=(pa.x+pb.x)/2;
+      const midY=(pa.y+pb.y)/2+(n-(Math.min(4,(grouped.get(key)||1))-1)/2)*4.2;
+      conditions.push(`<button class="dex-condition" type="button" data-from="${a.id}" data-to="${b.id}" style="--x:${midX};--y:${Math.max(4,Math.min(96,midY))}" title="${esc(e.from)} → ${esc(e.to)}">${esc(conditionSummary(e))}</button>`);
+    });
+  }
+  const nodes=list.map(d=>{const p=positions.get(d.id);return `<button class="dex-map-node attr-${esc(d.attribute)}" data-id="${d.id}" type="button" style="--x:${p.x};--y:${p.y}" title="#${padNo(d.dex_no)} ${esc(d.name_zh)}｜${esc(d.stage)}｜${esc(d.attribute)}">${sprite(d,'dex-map-sprite')}<span>${esc(d.name_zh)}</span></button>`;}).join('');
+  const stageLabels=stageOrder.map((stage,i)=>list.some(d=>d.stage===stage)?`<span class="dex-stage-label" style="--x:${i*(100/Math.max(1,stageOrder.length-1))}">${stage}</span>`:'').join('');
+  $('#dexView').innerHTML=`<section class="dex-map-shell ${dexWireMode}">
+    <div class="dex-tree-toolbar"><strong>進化技能樹</strong><div class="wire-switch" role="group" aria-label="圖鑑顯示模式"><button class="${dexWireMode==='wireless'?'active':''}" data-wire="wireless" type="button">無線</button><button class="${dexWireMode==='wired'?'active':''}" data-wire="wired" type="button">有線</button></div><span id="treeSelection" class="tree-selection">尚未選擇</span><button id="treeClear" type="button" disabled>清除路線</button><button id="treeGoEvolution" type="button" disabled>查看進化條件</button><span class="dex-tree-hint">點數碼獸可高亮完整路線</span></div>
+    <div class="dex-map-viewport"><div id="dexTreeBoard" class="dex-map-board"><div class="dex-stage-labels">${stageLabels}</div><svg id="dexTreeLines" class="dex-tree-lines" aria-hidden="true"></svg>${conditions.join('')}${nodes}</div></div>
+  </section>`;
+  $$('[data-wire]').forEach(b=>b.onclick=()=>{dexWireMode=b.dataset.wire;renderDex();});
+  $$('.dex-map-node').forEach(n=>n.onclick=()=>applyTreeSelection(treeSelectedId===n.dataset.id?'':n.dataset.id));
+  $$('.dex-condition').forEach(c=>c.onclick=()=>{const id=c.dataset.to;applyTreeSelection(id);});
   $('#treeClear').onclick=()=>applyTreeSelection('');
   $('#treeGoEvolution').onclick=()=>{if(treeSelectedId)jumpToDigimon(treeSelectedId);};
   if(treeSelectedId&&!list.some(d=>d.id===treeSelectedId))treeSelectedId='';
-  requestAnimationFrame(()=>{applyTreeSelection(treeSelectedId);setTimeout(drawTreeLines,80);});
+  requestAnimationFrame(()=>{applyTreeSelection(treeSelectedId);setTimeout(drawTreeLines,100);});
 }
+
 function updateSummary(){
   const visible=filteredDigimon().length,parts=[];
   if(query)parts.push(`搜尋「${$('#searchInput').value.trim()}」`);if(stageFilter)parts.push(stageFilter);if(attributeFilter)parts.push(attributeFilter);
