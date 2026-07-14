@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DMVault｜Pendulum COLOR V0 病毒剋星</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><strong>DMVault</strong><span>Pendulum COLOR</span></div>
+  <nav class="versions" aria-label="版本切換">
+    <button class="version active">V0 病毒剋星</button>
+    <button class="version" disabled>V1</button><button class="version" disabled>V2</button>
+    <button class="version" disabled>V3</button><button class="version" disabled>V4</button><button class="version" disabled>V5</button>
+  </nav>
+</header>
+<main>
+  <section class="toolbar">
+    <div class="tabs"><button data-view="evolution" class="tab active">進化條件</button><button data-view="dex" class="tab">圖鑑</button></div>
+    <label class="search"><span>搜尋</span><input id="searchInput" placeholder="中文／日文名稱、圖鑑編號"></label>
+  </section>
+  <section class="notice">V0 框架測試版：資料依原試算表顯示，不自行解釋「照顧、努力、戰鬥、勝率」數值。</section>
+  <section id="evolutionView" class="view"></section>
+  <section id="dexView" class="view hidden"></section>
+</main>
+<footer>資料來源：DIGIMON PENDULUM COLOR 中文攻略｜框架版本 v0.1</footer>
+<script src="app.js"></script>
+</body></html>
