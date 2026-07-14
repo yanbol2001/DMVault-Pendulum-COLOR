@@ -95,15 +95,55 @@ function renderEvolution(){
   $$('[data-share]').forEach(b=>b.onclick=()=>{const d=DATA.digimon.find(x=>x.id===b.dataset.share);if(d)shareDigimon(d);});
   renderStageNav();
 }
+let treeSelectedId='';
+function uniqueTreeEdges(){
+  const seen=new Set(), edges=[];
+  for(const e of DATA.evolutions){
+    const a=byName(e.from),b=byName(e.to); if(!a||!b||a.id===b.id)continue;
+    const key=`${a.id}>${b.id}`; if(seen.has(key))continue; seen.add(key);edges.push({from:a.id,to:b.id});
+  }
+  return edges;
+}
+function treeRelations(id){
+  const edges=uniqueTreeEdges(), parents=new Map(), children=new Map();
+  for(const e of edges){if(!parents.has(e.to))parents.set(e.to,[]);parents.get(e.to).push(e.from);if(!children.has(e.from))children.set(e.from,[]);children.get(e.from).push(e.to);}
+  const ancestors=new Set(),descendants=new Set();
+  const walk=(map,start,set)=>{const q=[start];while(q.length){const cur=q.shift();for(const n of map.get(cur)||[]){if(!set.has(n)){set.add(n);q.push(n);}}}};
+  walk(parents,id,ancestors);walk(children,id,descendants);
+  return {edges,ancestors,descendants,related:new Set([id,...ancestors,...descendants])};
+}
+function drawTreeLines(){
+  const tree=$('#dexTree'),svg=$('#dexTreeLines');if(!tree||!svg)return;
+  const tr=tree.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${tr.width} ${tr.height}`);svg.innerHTML='';
+  const relation=treeSelectedId?treeRelations(treeSelectedId):null;
+  for(const edge of uniqueTreeEdges()){
+    const a=tree.querySelector(`[data-id="${edge.from}"]`),b=tree.querySelector(`[data-id="${edge.to}"]`);if(!a||!b)continue;
+    const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
+    let x1=ar.right-tr.left,y1=ar.top+ar.height/2-tr.top,x2=br.left-tr.left,y2=br.top+br.height/2-tr.top;
+    if(innerWidth<=760){x1=ar.left+ar.width/2-tr.left;y1=ar.bottom-tr.top;x2=br.left+br.width/2-tr.left;y2=br.top-tr.top;}
+    const dx=Math.max(22,Math.abs(x2-x1)*.45), vertical=innerWidth<=760;
+    const d=vertical?`M ${x1} ${y1} C ${x1} ${y1+28}, ${x2} ${y2-28}, ${x2} ${y2}`:`M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',d);path.dataset.from=edge.from;path.dataset.to=edge.to;
+    if(relation){const active=(edge.from===treeSelectedId||relation.ancestors.has(edge.from))&&(edge.to===treeSelectedId||relation.descendants.has(edge.to)||relation.ancestors.has(edge.to));path.classList.add(active?'active':'dimmed');}
+    svg.appendChild(path);
+  }
+}
+function applyTreeSelection(id){
+  treeSelectedId=id||'';const d=DATA.digimon.find(x=>x.id===treeSelectedId);const relation=d?treeRelations(d.id):null;
+  $$('.dex-tree-node').forEach(n=>{n.classList.remove('selected','related','dimmed');if(!relation)return;n.classList.toggle('selected',n.dataset.id===d.id);n.classList.toggle('related',n.dataset.id!==d.id&&relation.related.has(n.dataset.id));n.classList.toggle('dimmed',!relation.related.has(n.dataset.id));});
+  const label=$('#treeSelection');if(label)label.textContent=d?`${d.name_zh}：已高亮完整前後路線`:'尚未選擇';
+  const go=$('#treeGoEvolution');if(go)go.disabled=!d;const clear=$('#treeClear');if(clear)clear.disabled=!d;drawTreeLines();
+}
 function renderDex(){
   const list=filteredDigimon();
-  const stages=stageOrder.filter(stage=>list.some(d=>d.stage===stage));
   if(!list.length){$('#dexView').innerHTML='<div class="empty">找不到符合項目</div>';return;}
-  $('#dexView').innerHTML=`<div class="dex-chart-wrap"><div class="dex-chart">${stages.map(stage=>{
-    const ds=list.filter(d=>d.stage===stage);
-    return `<section class="dex-stage-row"><h2><span>${stage}</span><small>${ds.length} 隻</small></h2><div class="dex-stage-list">${ds.map(d=>`<button class="dex-mon" data-id="${d.id}" type="button">${sprite(d,'dex-sprite')}<span class="dex-no">#${padNo(d.dex_no)}</span><strong>${esc(d.name_zh)}</strong><small>${esc(d.attribute)}</small></button>`).join('')}</div></section>`;
-  }).join('')}</div></div>`;
-  $$('.dex-mon').forEach(x=>x.onclick=()=>jumpToDigimon(x.dataset.id));
+  const stages=stageOrder.filter(stage=>list.some(d=>d.stage===stage));
+  $('#dexView').innerHTML=`<section class="dex-tree-shell"><div class="dex-tree-toolbar"><strong>技能樹圖鑑</strong><span id="treeSelection" class="tree-selection">尚未選擇</span><button id="treeClear" type="button" disabled>清除路線</button><button id="treeGoEvolution" type="button" disabled>查看進化條件</button><span class="dex-tree-hint">點一下高亮路線；再點同一隻可清除</span></div><div id="dexTree" class="dex-tree"><svg id="dexTreeLines" class="dex-tree-lines" aria-hidden="true"></svg>${stages.map(stage=>{const ds=list.filter(d=>d.stage===stage);return `<section class="dex-tree-stage"><h2>${stage}</h2><div class="dex-tree-stage-list">${ds.map(d=>`<button class="dex-tree-node" data-id="${d.id}" type="button">${sprite(d,'dex-sprite')}<span class="dex-no">#${padNo(d.dex_no)}</span><strong>${esc(d.name_zh)}</strong><small>${esc(d.attribute)}</small></button>`).join('')}</div></section>`;}).join('')}</div></section>`;
+  $$('.dex-tree-node').forEach(n=>n.onclick=()=>applyTreeSelection(treeSelectedId===n.dataset.id?'':n.dataset.id));
+  $('#treeClear').onclick=()=>applyTreeSelection('');
+  $('#treeGoEvolution').onclick=()=>{if(treeSelectedId)jumpToDigimon(treeSelectedId);};
+  if(treeSelectedId&&!list.some(d=>d.id===treeSelectedId))treeSelectedId='';
+  requestAnimationFrame(()=>{applyTreeSelection(treeSelectedId);setTimeout(drawTreeLines,80);});
 }
 function updateSummary(){
   const visible=filteredDigimon().length,parts=[];
@@ -135,3 +175,5 @@ $('#expandAll').style.display='none';$('#collapseAll').style.display='none';
 $('#backToTop').onclick=()=>scrollTo({top:0,behavior:'smooth'});
 addEventListener('scroll',()=>$('#backToTop').classList.toggle('show',scrollY>500),{passive:true});
 addEventListener('hashchange',()=>DATA&&restoreHash());
+
+let treeResizeTimer;addEventListener('resize',()=>{clearTimeout(treeResizeTimer);treeResizeTimer=setTimeout(drawTreeLines,120);});
