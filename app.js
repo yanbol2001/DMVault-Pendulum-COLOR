@@ -177,31 +177,15 @@ function renderDex(){
   const list=filteredDigimon();
   if(!list.length){$('#dexView').innerHTML='<div class="empty">找不到符合項目</div>';return;}
   const positions=stageLayout(list);
-  const conditions=[];
-  if(dexWireMode==='wired'){
-    const grouped=new Map();
-    DATA.evolutions.forEach((e,idx)=>{
-      const a=byName(e.from),b=byName(e.to);if(!a||!b||!positions.has(a.id)||!positions.has(b.id))return;
-      const key=`${a.id}>${b.id}`;const n=grouped.get(key)||0;grouped.set(key,n+1);
-      const pa=positions.get(a.id),pb=positions.get(b.id);
-      const midX=(pa.x+pb.x)/2;
-      const midY=(pa.y+pb.y)/2+(n-(Math.min(4,(grouped.get(key)||1))-1)/2)*4.2;
-      conditions.push(`<button class="dex-condition" type="button" data-from="${a.id}" data-to="${b.id}" style="--x:${midX};--y:${Math.max(4,Math.min(96,midY))}" title="${esc(e.from)} → ${esc(e.to)}">${esc(conditionSummary(e))}</button>`);
-    });
-  }
-  const nodes=list.map(d=>{const p=positions.get(d.id);return `<button class="dex-map-node attr-${esc(d.attribute)}" data-id="${d.id}" type="button" style="--x:${p.x};--y:${p.y}" title="#${padNo(d.dex_no)} ${esc(d.name_zh)}｜${esc(d.stage)}｜${esc(d.attribute)}">${sprite(d,'dex-map-sprite')}<span>${esc(d.name_zh)}</span></button>`;}).join('');
+  const nodes=list.map(d=>{const p=positions.get(d.id);return `<button class="dex-map-node attr-${esc(d.attribute)}" data-id="${d.id}" type="button" style="--x:${p.x};--y:${p.y}" title="#${padNo(d.dex_no)} ${esc(d.name_zh)}｜點擊查看進化條件">${sprite(d,'dex-map-sprite')}<span>${esc(d.name_zh)}</span></button>`;}).join('');
   const stageLabels=stageOrder.map((stage,i)=>list.some(d=>d.stage===stage)?`<span class="dex-stage-label" style="--x:${i*(100/Math.max(1,stageOrder.length-1))}">${stage}</span>`:'').join('');
   $('#dexView').innerHTML=`<section class="dex-map-shell ${dexWireMode}">
-    <div class="dex-tree-toolbar"><strong>進化技能樹</strong><div class="wire-switch" role="group" aria-label="圖鑑顯示模式"><button class="${dexWireMode==='wireless'?'active':''}" data-wire="wireless" type="button">無線</button><button class="${dexWireMode==='wired'?'active':''}" data-wire="wired" type="button">有線</button></div><span id="treeSelection" class="tree-selection">尚未選擇</span><button id="treeClear" type="button" disabled>清除路線</button><button id="treeGoEvolution" type="button" disabled>查看進化條件</button><span class="dex-tree-hint">點數碼獸可高亮完整路線</span></div>
-    <div class="dex-map-viewport"><div id="dexTreeBoard" class="dex-map-board"><div class="dex-stage-labels">${stageLabels}</div><svg id="dexTreeLines" class="dex-tree-lines" aria-hidden="true"></svg>${conditions.join('')}${nodes}</div></div>
+    <div class="dex-tree-toolbar"><strong>進化技能樹</strong><div class="wire-switch" role="group" aria-label="圖鑑顯示模式"><button class="${dexWireMode==='wireless'?'active':''}" data-wire="wireless" type="button">無線</button><button class="${dexWireMode==='wired'?'active':''}" data-wire="wired" type="button">有線</button></div><span class="dex-tree-hint">點數碼獸直接查看完整進化條件</span></div>
+    <div class="dex-map-viewport"><div id="dexTreeBoard" class="dex-map-board"><div class="dex-stage-labels">${stageLabels}</div><svg id="dexTreeLines" class="dex-tree-lines" aria-hidden="true"></svg>${nodes}</div></div>
   </section>`;
   $$('[data-wire]').forEach(b=>b.onclick=()=>{dexWireMode=b.dataset.wire;renderDex();});
-  $$('.dex-map-node').forEach(n=>n.onclick=()=>applyTreeSelection(treeSelectedId===n.dataset.id?'':n.dataset.id));
-  $$('.dex-condition').forEach(c=>c.onclick=()=>{const id=c.dataset.to;applyTreeSelection(id);});
-  $('#treeClear').onclick=()=>applyTreeSelection('');
-  $('#treeGoEvolution').onclick=()=>{if(treeSelectedId)jumpToDigimon(treeSelectedId);};
-  if(treeSelectedId&&!list.some(d=>d.id===treeSelectedId))treeSelectedId='';
-  requestAnimationFrame(()=>{applyTreeSelection(treeSelectedId);setTimeout(drawTreeLines,100);});
+  $$('.dex-map-node').forEach(n=>n.onclick=()=>jumpToDigimon(n.dataset.id));
+  requestAnimationFrame(()=>setTimeout(drawTreeLines,80));
 }
 
 function updateSummary(){
