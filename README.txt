@@ -1,4 +1,4 @@
-DMVault Pendulum COLOR V0 v0.6 Alpha
+DMVault Pendulum COLOR V0 v0.7 Alpha
 
 更新：
 - 進化條件頁改為接近原試算表的橫向表格排版

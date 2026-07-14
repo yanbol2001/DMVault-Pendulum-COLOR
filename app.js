@@ -98,7 +98,7 @@ function renderDex(){
   if(!list.length){$('#dexView').innerHTML='<div class="empty">找不到符合項目</div>';return;}
   $('#dexView').innerHTML=`<div class="dex-chart-wrap"><div class="dex-chart">${stages.map(stage=>{
     const ds=list.filter(d=>d.stage===stage);
-    return `<section class="dex-stage-column"><h2>${stage}<small>${ds.length}</small></h2><div class="dex-stage-list">${ds.map(d=>`<button class="dex-mon" data-id="${d.id}" type="button">${sprite(d,'dex-sprite')}<span class="dex-no">#${padNo(d.dex_no)}</span><strong>${esc(d.name_zh)}</strong><small>${esc(d.attribute)}</small></button>`).join('')}</div></section>`;
+    return `<section class="dex-stage-row"><h2><span>${stage}</span><small>${ds.length} 隻</small></h2><div class="dex-stage-list">${ds.map(d=>`<button class="dex-mon" data-id="${d.id}" type="button">${sprite(d,'dex-sprite')}<span class="dex-no">#${padNo(d.dex_no)}</span><strong>${esc(d.name_zh)}</strong><small>${esc(d.attribute)}</small></button>`).join('')}</div></section>`;
   }).join('')}</div></div>`;
   $$('.dex-mon').forEach(x=>x.onclick=()=>jumpToDigimon(x.dataset.id));
 }
