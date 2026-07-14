@@ -1,9 +1,10 @@
-DMVault Pendulum COLOR V0 Framework v0.5 Alpha
+DMVault Pendulum COLOR V0 v0.6 Alpha
 
-上傳方式：
-1. 解壓縮。
-2. 將 index.html、styles.css、app.js、data、images 全部上傳到 GitHub 專案根目錄。
-3. 請勿漏傳 data 與 images 資料夾。
+更新：
+- 進化條件頁改為接近原試算表的橫向表格排版
+- 左側顯示原數碼獸基本資料，右側並排所有進化目標與條件
+- 圖鑑改為依階段分欄的完整圖表式版面
+- 手機可左右滑動瀏覽，不壓縮表格內容
+- 保留搜尋、篩選、點擊跳轉與單隻分享網址
 
-本版包含：總覽、進化條件、圖鑑、搜尋、階段/屬性篩選、固定網址分享、手機版與展開/收合控制。
-資料依原試算表呈現；圖片為單幀靜態 GIF。
+上傳時請將所有檔案與資料夾放在 GitHub Pages 專案根目錄。
