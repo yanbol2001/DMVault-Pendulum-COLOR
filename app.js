@@ -42,7 +42,7 @@ function sourceInfoTable(d){
         <span class="stage-tag">${esc(d.stage)}</span>
         <span class="attribute-tag">${esc(d.attribute)}</span>
         <span class="strength-label">強度</span><strong class="strength-value">${esc(d.strength||'-')}</strong>
-        <span class="attack-label">攻擊圖案</span><span class="attack-placeholder">✣</span>
+        <span class="attack-label">攻擊圖案</span><span class="attack-icon"><img src="${esc(d.attack_image||'')}" alt="攻擊圖案" onerror="this.parentElement.textContent='-'"></span>
       </div>
       <div class="source-stats">
         ${[['圖鑑編號',d.dex_no],['體重',d.minimum_weight],['DP值',d.dp],['基礎照顧心',d.base_care_hearts],['飢餓倒數',d.hunger_strength_timer_min],['大便倒數',d.poop_timer_min],['戰鬥／合體',jogress],['入睡時間',d.sleep_start],['起床時間',d.sleep_end]].map(([k,v])=>`<div class="stat-label">${esc(k)}</div><div class="stat-value">${esc(v??'-')}</div>`).join('')}
@@ -53,14 +53,17 @@ function sourceInfoTable(d){
 function routeColumn(e){
   const target=byName(e.to);
   const fields=[['照顧',e.care_mistakes],['努力',e.effort],['戰鬥',e.battles],['勝率',e.win_rate],['時間',e.time]];
-  const extra=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x)).join('／');
+  const noteParts=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
+  const extra=noteParts.join('<br>');
+  const noteText=noteParts.join(' ');
+  const noteClass=noteText.includes('解鎖圖鑑6 前')?'unlock-before':noteText.includes('解鎖圖鑑6 後')?'unlock-after':noteParts.length?'jogress-note':'';
   return `<div class="route-column">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}
       <strong>${esc(e.to)}</strong>
     </button>
     <div class="route-fields">${fields.map(([k,v])=>`<div class="route-label">${k}</div><div class="route-value ${(!v||v==='-')?'muted':''}">${esc(v||'-')}</div>`).join('')}</div>
-    <div class="route-note">${extra?esc(extra):'&nbsp;'}</div>
+    <div class="route-note ${noteClass}">${extra||'&nbsp;'}</div>
   </div>`;
 }
 function renderOverview(){

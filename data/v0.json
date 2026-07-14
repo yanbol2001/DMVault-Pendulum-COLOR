@@ -25,7 +25,8 @@
       "base_care_hearts": "1",
       "can_battle": "X",
       "id": "v0-001",
-      "image": "images/v0/001.gif"
+      "image": "images/v0/001.gif",
+      "attack_image": "images/attack/v0/036.png"
     },
     {
       "version": "V0",
@@ -52,7 +53,8 @@
       "base_care_hearts": "2",
       "can_battle": "X",
       "id": "v0-002",
-      "image": "images/v0/002.gif"
+      "image": "images/v0/002.gif",
+      "attack_image": "images/attack/v0/048.png"
     },
     {
       "version": "V0",
@@ -79,7 +81,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-003",
-      "image": "images/v0/003.gif"
+      "image": "images/v0/003.gif",
+      "attack_image": "images/attack/v0/001.png"
     },
     {
       "version": "V0",
@@ -106,7 +109,8 @@
       "base_care_hearts": "2",
       "can_battle": "O",
       "id": "v0-004",
-      "image": "images/v0/004.gif"
+      "image": "images/v0/004.gif",
+      "attack_image": "images/attack/v0/001.png"
     },
     {
       "version": "V0",
@@ -133,7 +137,8 @@
       "base_care_hearts": "2",
       "can_battle": "O",
       "id": "v0-005",
-      "image": "images/v0/005.gif"
+      "image": "images/v0/005.gif",
+      "attack_image": "images/attack/v0/021.png"
     },
     {
       "version": "V0",
@@ -160,7 +165,8 @@
       "base_care_hearts": "2",
       "can_battle": "O",
       "id": "v0-006",
-      "image": "images/v0/006.gif"
+      "image": "images/v0/006.gif",
+      "attack_image": "images/attack/v0/020.png"
     },
     {
       "version": "V0",
@@ -187,7 +193,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-007",
-      "image": "images/v0/007.gif"
+      "image": "images/v0/007.gif",
+      "attack_image": "images/attack/v0/003.png"
     },
     {
       "version": "V0",
@@ -214,7 +221,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-008",
-      "image": "images/v0/008.gif"
+      "image": "images/v0/008.gif",
+      "attack_image": "images/attack/v0/006.png"
     },
     {
       "version": "V0",
@@ -241,7 +249,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-009",
-      "image": "images/v0/009.gif"
+      "image": "images/v0/009.gif",
+      "attack_image": "images/attack/v0/003.png"
     },
     {
       "version": "V0",
@@ -268,7 +277,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-010",
-      "image": "images/v0/010.gif"
+      "image": "images/v0/010.gif",
+      "attack_image": "images/attack/v0/035.png"
     },
     {
       "version": "V0",
@@ -295,7 +305,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-011",
-      "image": "images/v0/011.gif"
+      "image": "images/v0/011.gif",
+      "attack_image": "images/attack/v0/006.png"
     },
     {
       "version": "V0",
@@ -322,7 +333,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-012",
-      "image": "images/v0/012.gif"
+      "image": "images/v0/012.gif",
+      "attack_image": "images/attack/v0/051.png"
     },
     {
       "version": "V0",
@@ -349,7 +361,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-013",
-      "image": "images/v0/013.gif"
+      "image": "images/v0/013.gif",
+      "attack_image": "images/attack/v0/054.png"
     },
     {
       "version": "V0",
@@ -376,7 +389,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-014",
-      "image": "images/v0/014.gif"
+      "image": "images/v0/014.gif",
+      "attack_image": "images/attack/v0/047.png"
     },
     {
       "version": "V0",
@@ -403,7 +417,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-015",
-      "image": "images/v0/015.gif"
+      "image": "images/v0/015.gif",
+      "attack_image": "images/attack/v0/010.png"
     },
     {
       "version": "V0",
@@ -430,7 +445,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-016",
-      "image": "images/v0/016.gif"
+      "image": "images/v0/016.gif",
+      "attack_image": "images/attack/v0/053.png"
     },
     {
       "version": "V0",
@@ -457,7 +473,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-017",
-      "image": "images/v0/017.gif"
+      "image": "images/v0/017.gif",
+      "attack_image": "images/attack/v0/002.png"
     },
     {
       "version": "V0",
@@ -484,7 +501,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-018",
-      "image": "images/v0/018.gif"
+      "image": "images/v0/018.gif",
+      "attack_image": "images/attack/v0/006.png"
     },
     {
       "version": "V0",
@@ -511,7 +529,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-019",
-      "image": "images/v0/019.gif"
+      "image": "images/v0/019.gif",
+      "attack_image": "images/attack/v0/026.png"
     },
     {
       "version": "V0",
@@ -538,7 +557,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-020",
-      "image": "images/v0/020.gif"
+      "image": "images/v0/020.gif",
+      "attack_image": "images/attack/v0/105.png"
     },
     {
       "version": "V0",
@@ -565,7 +585,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-021",
-      "image": "images/v0/021.gif"
+      "image": "images/v0/021.gif",
+      "attack_image": "images/attack/v0/104.png"
     },
     {
       "version": "V0",
@@ -592,7 +613,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-022",
-      "image": "images/v0/022.gif"
+      "image": "images/v0/022.gif",
+      "attack_image": "images/attack/v0/081.png"
     },
     {
       "version": "V0",
@@ -619,7 +641,8 @@
       "base_care_hearts": "3",
       "can_battle": "O",
       "id": "v0-023",
-      "image": "images/v0/023.gif"
+      "image": "images/v0/023.gif",
+      "attack_image": "images/attack/v0/016.png"
     },
     {
       "version": "V0",
@@ -646,7 +669,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-024",
-      "image": "images/v0/024.gif"
+      "image": "images/v0/024.gif",
+      "attack_image": "images/attack/v0/033.png"
     },
     {
       "version": "V0",
@@ -673,7 +697,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-025",
-      "image": "images/v0/025.gif"
+      "image": "images/v0/025.gif",
+      "attack_image": "images/attack/v0/034.png"
     },
     {
       "version": "V0",
@@ -700,7 +725,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-026",
-      "image": "images/v0/026.gif"
+      "image": "images/v0/026.gif",
+      "attack_image": "images/attack/v0/016.png"
     },
     {
       "version": "V0",
@@ -727,7 +753,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-027",
-      "image": "images/v0/027.gif"
+      "image": "images/v0/027.gif",
+      "attack_image": "images/attack/v0/019.png"
     },
     {
       "version": "V0",
@@ -754,7 +781,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-028",
-      "image": "images/v0/028.gif"
+      "image": "images/v0/028.gif",
+      "attack_image": "images/attack/v0/113.png"
     },
     {
       "version": "V0",
@@ -781,7 +809,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-029",
-      "image": "images/v0/029.gif"
+      "image": "images/v0/029.gif",
+      "attack_image": "images/attack/v0/030.png"
     },
     {
       "version": "V0",
@@ -808,7 +837,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-030",
-      "image": "images/v0/030.gif"
+      "image": "images/v0/030.gif",
+      "attack_image": "images/attack/v0/031.png"
     },
     {
       "version": "V0",
@@ -835,7 +865,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-031",
-      "image": "images/v0/031.gif"
+      "image": "images/v0/031.gif",
+      "attack_image": "images/attack/v0/032.png"
     },
     {
       "version": "V0",
@@ -862,7 +893,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-032",
-      "image": "images/v0/032.gif"
+      "image": "images/v0/032.gif",
+      "attack_image": "images/attack/v0/104.png"
     },
     {
       "version": "V0",
@@ -889,7 +921,8 @@
       "base_care_hearts": "4",
       "can_battle": "O",
       "id": "v0-033",
-      "image": "images/v0/033.gif"
+      "image": "images/v0/033.gif",
+      "attack_image": "images/attack/v0/111.png"
     }
   ],
   "evolutions": [
@@ -2286,7 +2319,8 @@
     }
   ],
   "meta": {
-    "framework_version": "v0.4",
-    "image_source": "原試算表內嵌靜態 GIF 圖片"
+    "framework_version": "v0.9 Alpha",
+    "image_source": "原試算表內嵌靜態 GIF 圖片",
+    "attack_images": 27
   }
 }
