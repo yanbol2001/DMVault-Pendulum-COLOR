@@ -2286,7 +2286,7 @@
     }
   ],
   "meta": {
-    "framework_version": "v0.2",
-    "image_source": "原試算表內嵌動態像素圖"
+    "framework_version": "v0.4",
+    "image_source": "原試算表內嵌靜態 GIF 圖片"
   }
 }
