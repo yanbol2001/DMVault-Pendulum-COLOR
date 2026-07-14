@@ -146,12 +146,16 @@ function drawTreeLines(){
   const br=board.getBoundingClientRect();
   svg.setAttribute('viewBox',`0 0 ${br.width} ${br.height}`);svg.innerHTML='';
   const relation=treeSelectedId?treeRelations(treeSelectedId):null;
-  for(const edge of uniqueTreeEdges()){
+  const edges=uniqueTreeEdges();
+  for(const [index,edge] of edges.entries()){
     const a=board.querySelector(`[data-id="${edge.from}"]`),b=board.querySelector(`[data-id="${edge.to}"]`);if(!a||!b)continue;
     const ar=a.getBoundingClientRect(),bb=b.getBoundingClientRect();
     const x1=ar.right-br.left,y1=ar.top+ar.height/2-br.top,x2=bb.left-br.left,y2=bb.top+bb.height/2-br.top;
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',linePath(x1,y1,x2,y2));path.dataset.from=edge.from;path.dataset.to=edge.to;
+    const hue=Math.round((index*137.508)%360);
+    path.setAttribute('d',linePath(x1,y1,x2,y2));
+    path.style.setProperty('--edge-color',`hsl(${hue} 78% 43%)`);
+    path.dataset.from=edge.from;path.dataset.to=edge.to;path.dataset.edge=String(index+1);
     if(relation){const active=relation.related.has(edge.from)&&relation.related.has(edge.to);path.classList.add(active?'active':'dimmed');}
     svg.appendChild(path);
   }
