@@ -178,8 +178,10 @@ function routeColumn(e){
     ${isJogress
       ? `<div class="jogress-condition"><img src="images/ui/jogres.png" alt="JOGRES"></div>`
       : `<div class="route-fields">${fields.map(([k,v])=>`<div class="route-label">${k}</div><div class="route-value ${(!v||v==='-')?'muted':''}">${esc(v||'-')}</div>`).join('')}</div>`}
-    <div class="route-note ${noteClass}">${extra||'&nbsp;'}</div>
-    ${timerMarkup(e,isJogress)}
+    <div class="route-bottom ${isJogress?'route-bottom-jogress':'route-bottom-normal'}">
+      <div class="route-note ${noteClass}">${extra||''}</div>
+      ${timerMarkup(e,isJogress)}
+    </div>
   </div>`;
 }
 function renderOverview(){
@@ -320,6 +322,7 @@ function drawTreeLines(){
   }
 
   const labelLayer=svgEl('g',{'class':'evo-label-layer'});
+  const occupiedLabels=[];
   let groupIndex=0;
   for(const group of grouped.values()){
     const targetNode=board.querySelector(`[data-id="${group.to.id}"]`);if(!targetNode)continue;
@@ -337,7 +340,7 @@ function drawTreeLines(){
 
     // v0.16：每條引導線至少相隔 30px，避免 Va / Da / Vi 標籤上下重疊。
     // 單一路線仍置中；多路線則在目標前垂直展開，最後才匯入目標。
-    const slotGap=n>1?30:0;
+    const slotGap=n>1?38:0;
     const slotStart=targetCenterY-((n-1)*slotGap)/2;
     const mergeX=tx-14;
     const labelX=tx-62;
@@ -345,8 +348,30 @@ function drawTreeLines(){
     const available=Math.max(72,labelX-maxSourceX);
     const baseLaneX=maxSourceX+Math.max(30,available*.46);
 
+    // Resolve collisions not only within one target, but also against labels from
+    // nearby target groups. This prevents Da / Vi / Va labels from stacking.
+    const slots=valid.map((item,i)=>{
+      const label=jogressAttributeLabel(item.evo);
+      const width=Math.max(30,label.length*9+16);
+      let y=slotStart+i*slotGap;
+      if(label){
+        const overlaps=yy=>occupiedLabels.some(r=>
+          Math.abs(labelX-r.x)<(width+r.width)/2+5 && Math.abs(yy-r.y)<30
+        );
+        if(overlaps(y)){
+          for(let step=1;step<=8;step++){
+            const candidates=[y+step*32,y-step*32];
+            const found=candidates.find(yy=>yy>18&&yy<boardH-18&&!overlaps(yy));
+            if(found!==undefined){y=found;break;}
+          }
+        }
+        occupiedLabels.push({x:labelX,y,width});
+      }
+      return {y,label,width};
+    });
+
     valid.forEach((item,i)=>{
-      const slotY=slotStart+i*slotGap;
+      const slotY=slots[i].y;
       // 各來源先走獨立車道，再進入靠近目標的平行區；不在標籤前合流。
       const laneOffset=(i-(n-1)/2)*7;
       const laneX=Math.min(labelX-46,baseLaneX+laneOffset);
@@ -356,9 +381,9 @@ function drawTreeLines(){
       path.dataset.from=item.from.id;path.dataset.to=group.to.id;
       svg.appendChild(path);
 
-      const label=jogressAttributeLabel(item.evo);
+      const label=slots[i].label;
       if(label){
-        const width=Math.max(30,label.length*9+16);
+        const width=slots[i].width;
         const lx=labelX;
         const ly=slotY;
         const g=svgEl('g',{'class':'evo-line-label','data-from':item.from.id,'data-to':group.to.id});
@@ -371,7 +396,7 @@ function drawTreeLines(){
 
     // 每條短引導線維持自己的高度，進入目標前才各自彎向中心。
     valid.forEach((item,i)=>{
-      const slotY=slotStart+i*slotGap;
+      const slotY=slots[i].y;
       const bendX=tx-8;
       const finalD=slotY===targetCenterY
         ?`M ${mergeX} ${slotY} H ${tx}`

@@ -471,3 +471,68 @@
 .jogress-partner-row span{display:block;line-height:1.25}
 .route-column-jogress .route-note:has(.jogress-partner-row){min-height:116px!important;height:116px!important}
 @media(max-width:760px){.jogress-partner-sprite{flex-basis:42px;height:42px}.jogress-partner-sprite img{width:40px!important;height:40px!important}}
+
+/* v0.38: collision-safe Jogress labels + compact uniform route cards */
+.route-bottom{
+  flex:0 0 94px!important;
+  height:94px!important;
+  min-height:94px!important;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-top:1px solid #c9c9c9;
+  background:#fff;
+}
+.route-bottom .route-note{
+  flex:0 0 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  border:0!important;
+  overflow:hidden!important;
+}
+.route-bottom-normal .route-note:empty{display:none!important}
+.route-bottom-normal .route-note:not(:empty){
+  min-height:30px!important;
+  max-height:38px!important;
+  padding:3px 4px!important;
+}
+.route-bottom .route-timer{
+  flex:1 1 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  border-top:0!important;
+  padding:5px!important;
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+}
+.route-bottom .route-timer .timer-start{
+  width:calc(100% - 8px);
+  min-height:40px!important;
+}
+.route-bottom-jogress .route-note{
+  flex:1 1 auto!important;
+  height:100%!important;
+  min-height:0!important;
+  display:grid!important;
+  align-content:stretch!important;
+  grid-auto-rows:minmax(22px,1fr)!important;
+}
+.route-bottom-jogress .jogress-note-row{
+  min-height:22px!important;
+  padding:2px 3px!important;
+  font-size:14px!important;
+}
+.route-bottom-jogress .jogress-partner-row{
+  min-height:50px!important;
+}
+.route-bottom-jogress .route-timer{display:none!important}
+.route-column-jogress::after{display:none!important}
+.route-column-jogress .route-note:has(.jogress-partner-row){
+  height:100%!important;
+  min-height:0!important;
+}
+@media(max-width:760px){
+  .route-bottom{flex-basis:90px!important;height:90px!important;min-height:90px!important}
+  .route-bottom-jogress .jogress-note-row{font-size:13px!important}
+}
