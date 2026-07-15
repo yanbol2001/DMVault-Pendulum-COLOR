@@ -237,3 +237,20 @@
 .raised-mark{position:absolute;right:-5px;top:-7px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#2f9e44;color:#fff;border:2px solid #fff;font-size:13px;font-weight:900;z-index:12}
 .stage-heading{position:sticky;top:0;z-index:12;background:#fff;border-bottom:2px solid #333;padding-top:6px}
 @media(max-width:760px){.route-timer,.route-column-jogress::after{height:74px;min-height:74px}.stage-pill{font-size:10px;padding:2px 5px}}
+
+
+/* v0.27: merge pause/freeze, increase timer typography */
+.route-timer{height:88px;min-height:88px;padding:6px 5px;gap:5px}
+.timer-status{font-size:15px;font-weight:900;line-height:1.15}
+.timer-countdown{font-size:19px;line-height:1.05;font-weight:900}
+.timer-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.timer-actions button,.timer-start,.timer-reset{font-size:14px!important;font-weight:900;min-height:31px!important;padding:4px 3px!important}
+.timer-start{width:100%}
+.route-column-jogress::after{height:88px;min-height:88px}
+.route-timer.timer-paused{background:#e7f5ff}
+@media(max-width:760px){
+  .route-timer,.route-column-jogress::after{height:84px;min-height:84px}
+  .timer-status{font-size:14px}
+  .timer-countdown{font-size:18px}
+  .timer-actions button,.timer-start,.timer-reset{font-size:13px!important}
+}

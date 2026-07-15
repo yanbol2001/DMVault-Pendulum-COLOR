@@ -45,21 +45,21 @@ function timerMarkup(e,isJogress){
   if(!state)return `<div class="route-timer" data-timer-key="${esc(key)}"><button class="timer-start" type="button" data-timer-start="${esc(key)}" data-duration="${duration}">開始培養</button></div>`;
   const remaining=timerRemaining(state),done=remaining<=0||state.status==='done';
   if(done)return `<div class="route-timer timer-done" data-timer-key="${esc(key)}"><span class="timer-status">可進化</span><strong class="timer-countdown">完成</strong><button class="timer-reset" type="button" data-timer-reset="${esc(key)}">重新開始</button></div>`;
-  const label=state.status==='frozen'?'已冷凍':state.status==='paused'?'已暫停':'培養中';
-  const cls=state.status==='frozen'?'timer-frozen':state.status==='paused'?'timer-paused':'timer-running';
+  // v0.27: 暫停與冷凍合併為同一個操作。舊版 paused 狀態視同 frozen。
+  const frozen=state.status==='frozen'||state.status==='paused';
+  const label=frozen?'已冷凍':'培養中';
+  const cls=frozen?'timer-frozen':'timer-running';
   const mainAction=state.status==='running'
-    ?`<button type="button" data-timer-pause="${esc(key)}">暫停</button>`
-    :`<button type="button" data-timer-resume="${esc(key)}">${state.status==='frozen'?'解除冷凍':'繼續'}</button>`;
-  const freezeAction=state.status==='frozen'?'':`<button type="button" data-timer-freeze="${esc(key)}">冷凍</button>`;
+    ?`<button type="button" data-timer-freeze="${esc(key)}">冷凍</button>`
+    :`<button type="button" data-timer-resume="${esc(key)}">解除冷凍</button>`;
   const endAttr=state.status==='running'?`data-timer-end="${state.endAt}"`:'';
-  return `<div class="route-timer ${cls}" data-timer-key="${esc(key)}"><span class="timer-status">${label}</span><strong class="timer-countdown" ${endAttr}>${formatRemaining(remaining)}</strong><div class="timer-actions">${mainAction}${freezeAction}<button class="timer-reset" type="button" data-timer-reset="${esc(key)}">重設</button></div></div>`;
+  return `<div class="route-timer ${cls}" data-timer-key="${esc(key)}"><span class="timer-status">${label}</span><strong class="timer-countdown" ${endAttr}>${formatRemaining(remaining)}</strong><div class="timer-actions">${mainAction}<button class="timer-reset" type="button" data-timer-reset="${esc(key)}">重設</button></div></div>`;
 }
 function updateTimer(key,fn){const timers=loadTimers(),state=normalizeTimer(timers[key]);timers[key]=fn(state);if(timers[key])saveTimers(timers);else{delete timers[key];saveTimers(timers)}renderEvolution();}
 function pauseTimer(key,status='paused'){updateTimer(key,state=>state?{...state,status,remainingMs:timerRemaining(state),endAt:null}:state)}
 function resumeTimer(key){updateTimer(key,state=>state?{...state,status:'running',endAt:Date.now()+timerRemaining(state)}:state)}
 function bindEvolutionTimers(){
   $$('[data-timer-start]').forEach(b=>b.onclick=()=>{const timers=loadTimers();timers[b.dataset.timerStart]={status:'running',endAt:Date.now()+Number(b.dataset.duration),duration:Number(b.dataset.duration)};saveTimers(timers);renderEvolution();});
-  $$('[data-timer-pause]').forEach(b=>b.onclick=()=>pauseTimer(b.dataset.timerPause,'paused'));
   $$('[data-timer-freeze]').forEach(b=>b.onclick=()=>pauseTimer(b.dataset.timerFreeze,'frozen'));
   $$('[data-timer-resume]').forEach(b=>b.onclick=()=>resumeTimer(b.dataset.timerResume));
   $$('[data-timer-reset]').forEach(b=>b.onclick=()=>{const timers=loadTimers();delete timers[b.dataset.timerReset];saveTimers(timers);renderEvolution();});
