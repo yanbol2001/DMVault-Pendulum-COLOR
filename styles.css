@@ -87,3 +87,9 @@
 .dex-map-viewport .dex-map-node{cursor:grab}
 .dex-map-viewport.dragging,.dex-map-viewport.dragging .dex-map-node{cursor:grabbing!important}
 .dex-map-viewport.dragging *{user-select:none!important}
+
+/* v0.19 real transform-based canvas panning */
+.dex-map-viewport{height:clamp(480px,72vh,760px);overflow:hidden!important;position:relative}
+.dex-map-canvas{width:100%;height:100%;min-width:0;min-height:0;overflow:visible}
+.dex-map-board{position:absolute;left:0;top:0;transform-origin:0 0;touch-action:none}
+@media(max-width:760px){.dex-map-viewport{height:68vh;min-height:430px}.dex-map-canvas{min-width:0}}

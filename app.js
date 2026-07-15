@@ -99,6 +99,7 @@ let treeSelectedId='';
 let treeHoverId='';
 let dexWireMode='wireless';
 let dexScale=1;
+let dexPanX=0,dexPanY=0;
 const DEX_SCALE_MIN=.65,DEX_SCALE_MAX=1.8,DEX_SCALE_STEP=.15;
 function uniqueTreeEdges(){
   const seen=new Set(), edges=[];
@@ -264,47 +265,51 @@ function applyTreeSelection(id){
   const go=$('#treeGoEvolution');if(go)go.disabled=!d;
   const clear=$('#treeClear');if(clear)clear.disabled=!d;
 }
-function setDexScale(next,anchor=null){
-  const viewport=$('.dex-map-viewport'),canvas=$('#dexMapCanvas'),board=$('#dexTreeBoard');if(!viewport||!canvas||!board)return;
-  const old=dexScale;dexScale=Math.max(DEX_SCALE_MIN,Math.min(DEX_SCALE_MAX,Math.round(next*100)/100));
-  const baseW=board.offsetWidth,baseH=board.offsetHeight;
-  const ax=anchor?.x??viewport.clientWidth/2, ay=anchor?.y??viewport.clientHeight/2;
-  const contentX=(viewport.scrollLeft+ax)/old,contentY=(viewport.scrollTop+ay)/old;
-  board.style.transform=`scale(${dexScale})`;canvas.style.width=`${baseW*dexScale}px`;canvas.style.height=`${baseH*dexScale}px`;
-  viewport.scrollLeft=contentX*dexScale-ax;viewport.scrollTop=contentY*dexScale-ay;
+function applyDexTransform(){
+  const board=$('#dexTreeBoard');
+  if(!board)return;
+  board.style.transform=`translate(${dexPanX}px, ${dexPanY}px) scale(${dexScale})`;
   const out=$('#dexZoomValue');if(out)out.textContent=`${Math.round(dexScale*100)}%`;
+}
+function setDexScale(next,anchor=null){
+  const viewport=$('.dex-map-viewport');if(!viewport)return;
+  const old=dexScale;
+  const updated=Math.max(DEX_SCALE_MIN,Math.min(DEX_SCALE_MAX,Math.round(next*100)/100));
+  const ax=anchor?.x??viewport.clientWidth/2, ay=anchor?.y??viewport.clientHeight/2;
+  const worldX=(ax-dexPanX)/old, worldY=(ay-dexPanY)/old;
+  dexScale=updated;
+  dexPanX=ax-worldX*dexScale;dexPanY=ay-worldY*dexScale;
+  applyDexTransform();
 }
 function bindDexPanZoom(){
   const viewport=$('.dex-map-viewport');if(!viewport)return;
-  let pointerActive=false,dragging=false,suppressClick=false,startX=0,startY=0,startLeft=0,startTop=0;
-  const DRAG_THRESHOLD=5;
+  let pointerActive=false,dragging=false,suppressClick=false,startX=0,startY=0,startPanX=0,startPanY=0,pointerId=null;
+  const DRAG_THRESHOLD=4;
   viewport.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;
-    pointerActive=true;dragging=false;suppressClick=false;
-    startX=e.clientX;startY=e.clientY;startLeft=viewport.scrollLeft;startTop=viewport.scrollTop;
-    viewport.setPointerCapture(e.pointerId);
+    pointerActive=true;dragging=false;suppressClick=false;pointerId=e.pointerId;
+    startX=e.clientX;startY=e.clientY;startPanX=dexPanX;startPanY=dexPanY;
+    try{viewport.setPointerCapture(e.pointerId)}catch{}
   });
   viewport.addEventListener('pointermove',e=>{
-    if(!pointerActive)return;
+    if(!pointerActive||e.pointerId!==pointerId)return;
     const dx=e.clientX-startX,dy=e.clientY-startY;
     if(!dragging&&Math.hypot(dx,dy)>=DRAG_THRESHOLD){dragging=true;suppressClick=true;viewport.classList.add('dragging');}
     if(!dragging)return;
     e.preventDefault();
-    viewport.scrollLeft=startLeft-dx;viewport.scrollTop=startTop-dy;
+    dexPanX=startPanX+dx;dexPanY=startPanY+dy;
+    applyDexTransform();
   });
   const stop=e=>{
+    if(pointerId!==null&&e.pointerId!==pointerId)return;
     pointerActive=false;dragging=false;viewport.classList.remove('dragging');
     try{viewport.releasePointerCapture(e.pointerId)}catch{}
+    pointerId=null;
+    setTimeout(()=>{suppressClick=false},0);
   };
   viewport.addEventListener('pointerup',stop);viewport.addEventListener('pointercancel',stop);
-  viewport.addEventListener('click',e=>{
-    if(!suppressClick)return;
-    suppressClick=false;e.preventDefault();e.stopPropagation();
-  },true);
-  viewport.addEventListener('dblclick',e=>{
-    if(!suppressClick)return;
-    suppressClick=false;e.preventDefault();e.stopPropagation();
-  },true);
+  viewport.addEventListener('click',e=>{if(!suppressClick)return;e.preventDefault();e.stopPropagation();},true);
+  viewport.addEventListener('dblclick',e=>{if(!suppressClick)return;e.preventDefault();e.stopPropagation();},true);
   viewport.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const r=viewport.getBoundingClientRect();setDexScale(dexScale+(e.deltaY<0?DEX_SCALE_STEP:-DEX_SCALE_STEP),{x:e.clientX-r.left,y:e.clientY-r.top});},{passive:false});
 }
 function renderDex(){
@@ -332,9 +337,9 @@ function renderDex(){
   $('#treeGoEvolution').onclick=()=>treeSelectedId&&jumpToDigimon(treeSelectedId);
   $('#dexZoomIn').onclick=()=>setDexScale(dexScale+DEX_SCALE_STEP);
   $('#dexZoomOut').onclick=()=>setDexScale(dexScale-DEX_SCALE_STEP);
-  $('#dexZoomReset').onclick=()=>{dexScale=1;setDexScale(1);const v=$('.dex-map-viewport');if(v){v.scrollLeft=0;v.scrollTop=0;}};
+  $('#dexZoomReset').onclick=()=>{dexScale=1;dexPanX=0;dexPanY=0;applyDexTransform();};
   bindDexPanZoom();
-  requestAnimationFrame(()=>setTimeout(()=>{drawTreeLines();setDexScale(dexScale);applyTreeSelection(treeSelectedId);},80));
+  requestAnimationFrame(()=>setTimeout(()=>{drawTreeLines();applyDexTransform();applyTreeSelection(treeSelectedId);},80));
 }
 
 function updateSummary(){
