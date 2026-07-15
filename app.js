@@ -435,18 +435,18 @@ function renderDex(){
   const list=filteredDigimon();
   if(!list.length){$('#dexView').innerHTML='<div class="empty">找不到符合項目</div>';return;}
   const positions=stageLayout(list);
-  const nodes=list.map(d=>{const p=positions.get(d.id);const raised=isRaised(d.id);return `<button class="dex-map-node attr-${esc(d.attribute)} ${raised?'raised':''}" data-id="${d.id}" type="button" style="--x:${p.x};--y:${p.y}" title="#${padNo(d.dex_no)} ${esc(d.name_zh)}｜點一下高亮，連點前往進化條件">${sprite(d,'dex-map-sprite')}<span>${esc(d.name_zh)}</span>${raised?'<span class="raised-mark">✓</span>':''}</button>`;}).join('');
+  const nodes=list.map(d=>{const p=positions.get(d.id);const raised=isRaised(d.id);return `<button class="dex-map-node attr-${esc(d.attribute)} ${raised?'raised':''}" data-id="${d.id}" type="button" style="--x:${p.x};--y:${p.y}" title="#${padNo(d.dex_no)} ${esc(d.name_zh)}｜點一下前往進化條件">${sprite(d,'dex-map-sprite')}<span>${esc(d.name_zh)}</span>${raised?'<span class="raised-mark">✓</span>':''}</button>`;}).join('');
   const stageLabels=stageOrder.map((stage,i)=>list.some(d=>d.stage===stage)?`<span class="dex-stage-label" style="--x:${i*(100/Math.max(1,stageOrder.length-1))}">${stage}</span>`:'').join('');
   $('#dexView').innerHTML=`<section class="dex-map-shell ${dexWireMode}">
     <div class="dex-tree-toolbar"><strong>進化技能樹</strong><div class="wire-switch" role="group" aria-label="圖鑑顯示模式"><button class="${dexWireMode==='wireless'?'active':''}" data-wire="wireless" type="button">無線</button><button class="${dexWireMode==='wired'?'active':''}" data-wire="wired" type="button">有線</button></div>
       <div class="tree-actions"><button id="dexZoomOut" type="button" aria-label="縮小">−</button><output id="dexZoomValue">${Math.round(dexScale*100)}%</output><button id="dexZoomIn" type="button" aria-label="放大">＋</button><button id="dexZoomReset" type="button">重設視圖</button><button id="treeClear" type="button" ${treeSelectedId?'':'disabled'}>清除高亮</button><button id="treeGoEvolution" type="button" ${treeSelectedId?'':'disabled'}>查看進化條件</button></div>
-      <span id="treeSelection" class="dex-tree-hint">${treeSelectedId?(DATA.digimon.find(d=>d.id===treeSelectedId)?.name_zh+'：已高亮完整前後路線'):'滑過可預覽；點一下固定高亮；連點前往進化條件'}</span></div>
+      <span id="treeSelection" class="dex-tree-hint">${treeSelectedId?(DATA.digimon.find(d=>d.id===treeSelectedId)?.name_zh+'：已高亮完整前後路線'):'滑過可預覽路線；點一下圖片前往進化條件'}</span></div>
     <div class="dex-map-viewport"><div id="dexMapCanvas" class="dex-map-canvas"><div id="dexTreeBoard" class="dex-map-board"><div class="dex-stage-labels">${stageLabels}</div><svg id="dexTreeLines" class="dex-tree-lines" aria-hidden="true"></svg>${nodes}</div></div></div>
   </section>`;
   $$('[data-wire]').forEach(b=>b.onclick=()=>{dexWireMode=b.dataset.wire;renderDex();});
   $$('.dex-map-node').forEach(n=>{
-    n.onclick=()=>applyTreeSelection(n.dataset.id);
-    n.ondblclick=()=>jumpToDigimon(n.dataset.id);
+    n.onclick=()=>jumpToDigimon(n.dataset.id);
+    n.ondblclick=null;
     n.onmouseenter=()=>{treeHoverId=n.dataset.id;applyTreeHighlight(treeHoverId,false)};
     n.onmouseleave=()=>{treeHoverId='';applyTreeHighlight(treeSelectedId,false)};
     n.onfocus=()=>{treeHoverId=n.dataset.id;applyTreeHighlight(treeHoverId,false)};

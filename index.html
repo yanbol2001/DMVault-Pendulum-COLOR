@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="description" content="DMVault Pendulum COLOR V0 病毒剋星進化條件與圖鑑">
 <title>DMVault｜Pendulum COLOR V0 病毒剋星</title>
-<link rel="stylesheet" href="styles.css?v=030">
+<link rel="stylesheet" href="styles.css?v=031">
 </head>
 <body>
 <header class="topbar">
@@ -18,26 +18,22 @@
   </nav>
 </header>
 <main>
-  <section class="toolbar" aria-label="內容工具列">
+  <section class="toolbar compact-toolbar" aria-label="內容工具列">
     <div class="tabs" role="tablist">
       <button data-view="overview" class="tab active" role="tab">總覽</button>
       <button data-view="evolution" class="tab" role="tab">進化條件</button>
       <button data-view="dex" class="tab" role="tab">圖鑑</button>
     </div>
-    <label class="search"><span>搜尋</span><span class="search-box"><input id="searchInput" type="search" autocomplete="off" placeholder="名稱、編號、階段、屬性"><button id="clearSearch" type="button" aria-label="清除搜尋">×</button><div id="searchSuggestions" class="search-suggestions hidden" role="listbox"></div></span></label>
+    <div class="filterbar" aria-label="篩選條件">
+      <label><span>階段</span><select id="stageFilter"><option value="">全部階段</option></select></label>
+      <label><span>屬性</span><select id="attributeFilter"><option value="">全部屬性</option></select></label>
+      <button id="resetFilters" type="button">重設</button>
+      <button id="expandAll" type="button">全部展開</button>
+      <button id="collapseAll" type="button">全部收合</button>
+    </div>
+    <span id="summary" class="summary compact-summary" aria-live="polite"></span>
+    <label class="search"><span class="search-label">搜尋</span><span class="search-box"><input id="searchInput" type="search" autocomplete="off" placeholder="名稱、編號、階段、屬性"><button id="clearSearch" type="button" aria-label="清除搜尋">×</button><div id="searchSuggestions" class="search-suggestions hidden" role="listbox"></div></span></label>
   </section>
-
-  <section class="filterbar" aria-label="篩選條件">
-    <label>階段<select id="stageFilter"><option value="">全部階段</option></select></label>
-    <label>屬性<select id="attributeFilter"><option value="">全部屬性</option></select></label>
-    <button id="resetFilters" type="button">重設</button>
-    <span class="filter-spacer"></span>
-    <button id="expandAll" type="button">全部展開</button>
-    <button id="collapseAll" type="button">全部收合</button>
-  </section>
-
-  <section class="notice">V0 Beta 打磨版：培養狀態、已養過、即時搜尋與培養總覽已整合。</section>
-  <section id="summary" class="summary" aria-live="polite"></section>
   <nav id="stageNav" class="stage-nav hidden" aria-label="階段快速跳轉"></nav>
   <section id="overviewView" class="view"></section>
   <section id="evolutionView" class="view hidden"></section>
@@ -45,7 +41,7 @@
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <button id="backToTop" class="back-top" type="button" aria-label="返回頂端">↑</button>
-<footer>資料來源：DIGIMON PENDULUM COLOR 中文攻略｜框架版本 v0.30 Uniform Raised Sync</footer>
-<script src="app.js?v=030"></script>
+<footer>資料來源：DIGIMON PENDULUM COLOR 中文攻略｜框架版本 v0.31 Compact Dex Link</footer>
+<script src="app.js?v=031"></script>
 </body>
 </html>
