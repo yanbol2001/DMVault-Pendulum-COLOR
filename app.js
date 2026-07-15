@@ -408,12 +408,11 @@ function bindDexPanZoom(){
     if(e.button!==0)return;
     pointerActive=true;dragging=false;suppressClick=false;pointerId=e.pointerId;
     startX=e.clientX;startY=e.clientY;startPanX=dexPanX;startPanY=dexPanY;
-    try{viewport.setPointerCapture(e.pointerId)}catch{}
   });
   viewport.addEventListener('pointermove',e=>{
     if(!pointerActive||e.pointerId!==pointerId)return;
     const dx=e.clientX-startX,dy=e.clientY-startY;
-    if(!dragging&&Math.hypot(dx,dy)>=DRAG_THRESHOLD){dragging=true;suppressClick=true;viewport.classList.add('dragging');}
+    if(!dragging&&Math.hypot(dx,dy)>=DRAG_THRESHOLD){dragging=true;suppressClick=true;viewport.classList.add('dragging');try{viewport.setPointerCapture(e.pointerId)}catch{}}
     if(!dragging)return;
     e.preventDefault();
     dexPanX=startPanX+dx;dexPanY=startPanY+dy;
@@ -427,7 +426,11 @@ function bindDexPanZoom(){
     setTimeout(()=>{suppressClick=false},0);
   };
   viewport.addEventListener('pointerup',stop);viewport.addEventListener('pointercancel',stop);
-  viewport.addEventListener('click',e=>{if(!suppressClick)return;e.preventDefault();e.stopPropagation();},true);
+  viewport.addEventListener('click',e=>{
+    if(suppressClick){e.preventDefault();e.stopPropagation();return;}
+    const node=e.target.closest('.dex-map-node');
+    if(node){e.preventDefault();jumpToDigimon(node.dataset.id);}
+  });
   viewport.addEventListener('dblclick',e=>{if(!suppressClick)return;e.preventDefault();e.stopPropagation();},true);
   viewport.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const r=viewport.getBoundingClientRect();setDexScale(dexScale+(e.deltaY<0?DEX_SCALE_STEP:-DEX_SCALE_STEP),{x:e.clientX-r.left,y:e.clientY-r.top});},{passive:false});
 }
@@ -445,7 +448,6 @@ function renderDex(){
   </section>`;
   $$('[data-wire]').forEach(b=>b.onclick=()=>{dexWireMode=b.dataset.wire;renderDex();});
   $$('.dex-map-node').forEach(n=>{
-    n.onclick=()=>jumpToDigimon(n.dataset.id);
     n.ondblclick=null;
     n.onmouseenter=()=>{treeHoverId=n.dataset.id;applyTreeHighlight(treeHoverId,false)};
     n.onmouseleave=()=>{treeHoverId='';applyTreeHighlight(treeSelectedId,false)};
