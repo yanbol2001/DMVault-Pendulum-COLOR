@@ -904,7 +904,7 @@
       "internal_dex_id": "32",
       "name_zh": "淑女惡魔獸",
       "name_jp": "",
-      "stage": "幼年期1",
+      "stage": "完全體",
       "attribute": "自由種",
       "minimum_weight": "0",
       "strength": "0",
@@ -2036,7 +2036,7 @@
     "version": "V1",
     "version_name": "自然靈魂",
     "source_sheet": "V1_自然靈魂",
-    "framework_version": "v0.34",
+    "framework_version": "v0.35",
     "status": "圖鑑與進化條件已完成",
     "image_source": "Humulos Nature Spirits"
   }
