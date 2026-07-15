@@ -165,7 +165,7 @@ function routeColumn(e){
       const attrs=attributeParts.join(' 或 ');
       rows.push([stage,attrs].filter(Boolean).join('・'));
       rows.push('不限指定數碼獸');
-      if(['鋼鐵悟空獸','黃金鄉獸'].includes(e.to))rows.push('可使用備份檔與自己合體');
+      if(['鋼鐵悟空獸','黃金鄉獸'].includes(e.from))rows.push('可使用備份檔與自己合體');
     }
     for(const partner of partnerParts)rows.push({type:'partner',name:partner});
     conditionRows=rows;

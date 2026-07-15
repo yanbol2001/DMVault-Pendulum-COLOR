@@ -557,3 +557,56 @@
   .jogress-partner-version{font-size:11px}
   .jogress-generic-note,.jogress-backup-note{font-size:12px!important}
 }
+
+
+/* v0.40: prevent condition-row and route-sprite clipping */
+.route-fields .route-label,
+.route-fields .route-value{
+  min-height:30px!important;
+  height:30px!important;
+  padding-top:2px!important;
+  padding-bottom:2px!important;
+  line-height:1.1!important;
+}
+.route-head{
+  flex-basis:112px!important;
+  height:112px!important;
+  padding:3px!important;
+  justify-content:flex-end!important;
+}
+.route-sprite{
+  flex:0 0 50px!important;
+  height:50px!important;
+  min-height:50px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:visible!important;
+}
+.route-sprite img{
+  width:50px!important;
+  height:50px!important;
+  max-width:50px!important;
+  max-height:50px!important;
+  object-fit:contain!important;
+}
+.route-head strong{
+  height:36px!important;
+  min-height:36px!important;
+  padding:3px 2px!important;
+}
+.route-stage{
+  min-height:20px!important;
+  height:20px!important;
+  padding:1px 4px!important;
+  font-size:12px!important;
+  line-height:18px!important;
+  margin-top:0!important;
+}
+@media(max-width:760px){
+  .route-head{flex-basis:108px!important;height:108px!important}
+  .route-sprite{flex-basis:47px!important;height:47px!important;min-height:47px!important}
+  .route-sprite img{width:47px!important;height:47px!important;max-width:47px!important;max-height:47px!important}
+  .route-head strong{height:34px!important;min-height:34px!important}
+  .route-stage{height:20px!important;min-height:20px!important;font-size:11px!important}
+}
