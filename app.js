@@ -54,7 +54,7 @@ function routeColumn(e){
   const target=byName(e.to);
   const fields=[['照顧',e.care_mistakes],['努力',e.effort],['戰鬥',e.battles],['勝率',e.win_rate],['時間',e.time]];
   const noteParts=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
-  const extra=noteParts.join('<br>');
+  const extra=noteParts.map(part=>`<div class="jogress-note-row">${esc(part)}</div>`).join('');
   const noteText=noteParts.join(' ');
   const isJogress=!fields.some(([,v])=>String(v||'').trim()&&String(v).trim()!=='-') && /(幼年期|成長期|成熟期|完全體|究極體|超究極體)的/.test(noteText) && /(疫苗種|資料種|病毒種|自由種)/.test(noteText);
   const noteClass=noteText.includes('解鎖圖鑑6 前')?'unlock-before':noteText.includes('解鎖圖鑑6 後')?'unlock-after':noteParts.length?'jogress-note':'';

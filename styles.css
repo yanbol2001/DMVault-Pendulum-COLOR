@@ -152,3 +152,32 @@
 @media(max-width:760px){
   .jogress-condition{height:96px}
 }
+
+/* v0.23 Jogress multi-condition rows */
+.route-column-jogress .route-note{
+  min-height:104px;
+  height:104px;
+  padding:0;
+  display:grid;
+  grid-auto-rows:minmax(25px,1fr);
+  align-content:stretch;
+  border-top:0;
+}
+.jogress-note-row{
+  width:100%;
+  min-height:25px;
+  padding:3px 2px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border-bottom:1px solid #c9c9c9;
+  color:#111;
+  line-height:1.2;
+}
+.jogress-note-row:last-child{border-bottom:0}
+.jogress-condition{height:96px}
+@media(max-width:760px){
+  .route-column-jogress .route-note{height:100px;min-height:100px}
+  .jogress-condition{height:92px}
+}
