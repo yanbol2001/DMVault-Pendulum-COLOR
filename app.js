@@ -1,3 +1,5 @@
+const ACTIVE_VERSION=(new URLSearchParams(location.search).get('version')||'v0').toLowerCase();
+const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂'};
 const stageOrder=['幼年期1','幼年期2','成長期','成熟期','完全體','究極體','超究極體'];
 let DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
 const $=s=>document.querySelector(s);
@@ -6,8 +8,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const padNo=n=>String(n).padStart(3,'0');
 const byName=name=>DATA?.digimon.find(d=>d.name_zh===name);
 
-const TIMER_STORAGE_KEY='dmvault-penc-v0-timers-v2';
-const RAISED_STORAGE_KEY='dmvault-penc-v0-raised';
+const TIMER_STORAGE_KEY=`dmvault-penc-${ACTIVE_VERSION}-timers-v2`;
+const RAISED_STORAGE_KEY=`dmvault-penc-${ACTIVE_VERSION}-raised`;
 let timerTickHandle=null;
 function loadTimers(){try{return JSON.parse(localStorage.getItem(TIMER_STORAGE_KEY)||'{}')}catch{return {}}}
 function saveTimers(v){localStorage.setItem(TIMER_STORAGE_KEY,JSON.stringify(v));}
@@ -21,7 +23,7 @@ function parseDurationMs(text){
   m=value.match(/^(\d+(?:\.\d+)?)\s*分鐘$/);if(m)return Number(m[1])*60*1000;
   return 0;
 }
-function timerKey(e){return `v0:${e.id||`${e.from}>${e.to}:${e.target_column||''}`}`;}
+function timerKey(e){return `${ACTIVE_VERSION}:${e.id||`${e.from}>${e.to}:${e.target_column||''}`}`;}
 function normalizeTimer(state){
   if(!state)return null;
   if(state.endAt&&!state.status)return {status:'running',endAt:state.endAt,duration:Math.max(0,state.endAt-Date.now())};
@@ -110,7 +112,7 @@ function jumpToDigimon(id,push=true){
 }
 async function shareDigimon(d){
   const url=new URL(location.href);url.hash=`digimon=${encodeURIComponent(d.id)}`;
-  try{if(navigator.share){await navigator.share({title:`${d.name_zh}｜DMVault Pendulum COLOR V0`,url:url.href});return;}await navigator.clipboard.writeText(url.href);showToast('已複製網址');}
+  try{if(navigator.share){await navigator.share({title:`${d.name_zh}｜DMVault Pendulum COLOR ${DATA?.meta?.version||ACTIVE_VERSION.toUpperCase()}`,url:url.href});return;}await navigator.clipboard.writeText(url.href);showToast('已複製網址');}
   catch(err){if(err?.name!=='AbortError')showToast('無法複製網址');}
 }
 function displayMinutes(v){
@@ -479,7 +481,7 @@ function renderSearchSuggestions(){
 function updateSummary(){
   const visible=filteredDigimon().length,parts=[];
   if(query)parts.push(`搜尋「${$('#searchInput').value.trim()}」`);if(stageFilter)parts.push(stageFilter);if(attributeFilter)parts.push(attributeFilter);
-  $('#summary').textContent=parts.length?`${parts.join('／')}：${visible} 隻`:`V0 共 ${DATA.digimon.length} 隻數碼獸／${DATA.evolutions.length} 組進化條件`;
+  $('#summary').textContent=parts.length?`${parts.join('／')}：${visible} 隻`:`${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}｜${DATA.digimon.length} 隻數碼獸${DATA.evolutions.length?`／${DATA.evolutions.length} 組進化條件`:'／進化條件待加入'}`;
 }
 function render(){renderOverview();renderEvolution();renderDex();updateSummary();renderSearchSuggestions();}
 function switchView(v,updateHash=true){
@@ -495,7 +497,7 @@ function populateFilters(){
 }
 function parseHash(){const p=new URLSearchParams(location.hash.slice(1));return {view:p.get('view'),id:p.get('digimon')};}
 function restoreHash(){const {view,id}=parseHash();if(id&&DATA.digimon.some(d=>d.id===id)){switchView('evolution',false);setTimeout(()=>jumpToDigimon(id,false),80);return;}switchView(['overview','evolution','dex'].includes(view)?view:'overview',false);}
-fetch('data/v0.json').then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).then(d=>{DATA=d;const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML='<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/v0.json 已一併上傳。</span></div>';console.error(err);});
+fetch(`data/${ACTIVE_VERSION}.json`).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).then(d=>{DATA=d;document.title=`DMVault｜Pendulum COLOR ${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}`;document.querySelectorAll('.version[data-version]').forEach(b=>{const active=b.dataset.version===ACTIVE_VERSION;b.classList.toggle('active',active);b.toggleAttribute('aria-current',active);});const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML=`<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/${ACTIVE_VERSION}.json 已一併上傳。</span></div>`;console.error(err);});
 $$('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
 $('#searchInput').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();renderSearchSuggestions();});
 $('#searchInput').addEventListener('focus',renderSearchSuggestions);
@@ -510,3 +512,5 @@ addEventListener('scroll',()=>$('#backToTop').classList.toggle('show',scrollY>50
 addEventListener('hashchange',()=>DATA&&restoreHash());
 
 let treeResizeTimer;addEventListener('resize',()=>{clearTimeout(treeResizeTimer);treeResizeTimer=setTimeout(drawTreeLines,120);});
+
+$$('.version[data-version]').forEach(b=>b.onclick=()=>{const u=new URL(location.href);u.searchParams.set('version',b.dataset.version);u.hash=currentView==='dex'?'view=dex':'view=overview';location.href=u.href;});
