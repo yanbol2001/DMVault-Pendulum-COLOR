@@ -254,3 +254,25 @@
   .timer-countdown{font-size:18px}
   .timer-actions button,.timer-start,.timer-reset{font-size:13px!important}
 }
+
+/* v0.28: actually enlarge route-card typography */
+.route-head strong{font-size:16px!important;line-height:1.2!important}
+.route-stage{font-size:13px!important;min-height:23px!important;padding:3px 4px!important}
+.route-label{font-size:15px!important;font-weight:700!important}
+.route-value{font-size:16px!important}
+.route-note{font-size:15px!important;line-height:1.35!important}
+.jogress-note-row{font-size:16px!important;font-weight:500!important;line-height:1.25!important;padding:5px 3px!important}
+.route-column-jogress .route-note{height:auto!important;min-height:116px!important;grid-auto-rows:minmax(29px,1fr)!important}
+.timer-status{font-size:16px!important}
+.timer-countdown{font-size:21px!important}
+.timer-actions button,.timer-start,.timer-reset{font-size:15px!important}
+@media(max-width:760px){
+  .route-head strong{font-size:15px!important}
+  .route-stage{font-size:12px!important}
+  .route-label{font-size:14px!important}
+  .route-value{font-size:15px!important}
+  .jogress-note-row{font-size:15px!important}
+  .timer-status{font-size:15px!important}
+  .timer-countdown{font-size:20px!important}
+  .timer-actions button,.timer-start,.timer-reset{font-size:14px!important}
+}
