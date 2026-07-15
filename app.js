@@ -38,6 +38,29 @@ function formatRemaining(ms){
   const total=Math.ceil(ms/1000),h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
+
+function timerStatusInfo(state){
+  if(!state)return {key:'idle',label:'未開始'};
+  const remaining=timerRemaining(state);
+  if(remaining<=0||state.status==='done')return {key:'done',label:'可進化'};
+  if(state.status==='frozen'||state.status==='paused')return {key:'frozen',label:'已冷凍'};
+  return {key:'running',label:'培養中'};
+}
+function evolutionByTimerKey(key){
+  return DATA?.evolutions.find(e=>timerKey(e)===key)||null;
+}
+function activeCultivations(){
+  const timers=loadTimers(), rows=[];
+  for(const [key,raw] of Object.entries(timers)){
+    const state=normalizeTimer(raw),e=evolutionByTimerKey(key);if(!state||!e)continue;
+    const info=timerStatusInfo(state);if(info.key==='idle')continue;
+    rows.push({key,state,e,info,remaining:timerRemaining(state)});
+  }
+  return rows.sort((a,b)=>{
+    const order={done:0,running:1,frozen:2};
+    return (order[a.info.key]??9)-(order[b.info.key]??9)||a.remaining-b.remaining;
+  });
+}
 function timerMarkup(e,isJogress){
   const duration=parseDurationMs(e.time);
   if(isJogress||!duration)return '';
@@ -55,19 +78,19 @@ function timerMarkup(e,isJogress){
   const endAttr=state.status==='running'?`data-timer-end="${state.endAt}"`:'';
   return `<div class="route-timer ${cls}" data-timer-key="${esc(key)}"><span class="timer-status">${label}</span><strong class="timer-countdown" ${endAttr}>${formatRemaining(remaining)}</strong><div class="timer-actions">${mainAction}<button class="timer-reset" type="button" data-timer-reset="${esc(key)}">重設</button></div></div>`;
 }
-function updateTimer(key,fn){const timers=loadTimers(),state=normalizeTimer(timers[key]);timers[key]=fn(state);if(timers[key])saveTimers(timers);else{delete timers[key];saveTimers(timers)}renderEvolution();}
+function updateTimer(key,fn){const timers=loadTimers(),state=normalizeTimer(timers[key]);timers[key]=fn(state);if(timers[key])saveTimers(timers);else{delete timers[key];saveTimers(timers)}renderEvolution();renderOverview();}
 function pauseTimer(key,status='paused'){updateTimer(key,state=>state?{...state,status,remainingMs:timerRemaining(state),endAt:null}:state)}
 function resumeTimer(key){updateTimer(key,state=>state?{...state,status:'running',endAt:Date.now()+timerRemaining(state)}:state)}
 function bindEvolutionTimers(){
-  $$('[data-timer-start]').forEach(b=>b.onclick=()=>{const timers=loadTimers();timers[b.dataset.timerStart]={status:'running',endAt:Date.now()+Number(b.dataset.duration),duration:Number(b.dataset.duration)};saveTimers(timers);renderEvolution();});
+  $$('[data-timer-start]').forEach(b=>b.onclick=()=>{const timers=loadTimers();timers[b.dataset.timerStart]={status:'running',endAt:Date.now()+Number(b.dataset.duration),duration:Number(b.dataset.duration)};saveTimers(timers);renderEvolution();renderOverview();});
   $$('[data-timer-freeze]').forEach(b=>b.onclick=()=>pauseTimer(b.dataset.timerFreeze,'frozen'));
   $$('[data-timer-resume]').forEach(b=>b.onclick=()=>resumeTimer(b.dataset.timerResume));
-  $$('[data-timer-reset]').forEach(b=>b.onclick=()=>{const timers=loadTimers();delete timers[b.dataset.timerReset];saveTimers(timers);renderEvolution();});
+  $$('[data-timer-reset]').forEach(b=>b.onclick=()=>{const timers=loadTimers();delete timers[b.dataset.timerReset];saveTimers(timers);renderEvolution();renderOverview();});
   clearInterval(timerTickHandle);
   timerTickHandle=setInterval(()=>{
     let needsRender=false;
     $$('[data-timer-end]').forEach(el=>{const left=Number(el.dataset.timerEnd)-Date.now();el.textContent=formatRemaining(left);if(left<=0)needsRender=true;});
-    if(needsRender){const timers=loadTimers();for(const [k,v0] of Object.entries(timers)){const v=normalizeTimer(v0);if(v?.status==='running'&&timerRemaining(v)<=0)timers[k]={...v,status:'done',remainingMs:0,endAt:null};}saveTimers(timers);renderEvolution();}
+    if(needsRender){const timers=loadTimers();for(const [k,v0] of Object.entries(timers)){const v=normalizeTimer(v0);if(v?.status==='running'&&timerRemaining(v)<=0)timers[k]={...v,status:'done',remainingMs:0,endAt:null};}saveTimers(timers);renderEvolution();renderOverview();}
   },1000);
 }
 function sprite(d,cls=''){return `<span class="sprite ${cls}"><img src="${esc(d.image)}" alt="${esc(d.name_zh)}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('sprite-error');this.parentElement.dataset.no='${padNo(d.dex_no)}'"></span>`;}
@@ -126,6 +149,7 @@ function routeColumn(e){
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}
+      ${target&&isRaised(target.id)?'<span class="route-raised-mark" aria-label="已養過">✓</span>':''}
       <strong>${esc(e.to)}</strong>${target?`<span class="route-stage">${esc(target.stage)}</span>`:''}
     </button>
     ${isJogress
@@ -137,8 +161,28 @@ function routeColumn(e){
 }
 function renderOverview(){
   const visible=filteredDigimon();
-  $('#overviewView').innerHTML=`<div class="overview-grid"><article class="stat-card"><strong>${visible.length}</strong><span>數碼獸</span></article><article class="stat-card"><strong>${DATA.evolutions.filter(e=>visible.some(d=>d.name_zh===e.from)).length}</strong><span>進化條件</span></article><article class="stat-card"><strong>${stageOrder.filter(s=>visible.some(d=>d.stage===s)).length}</strong><span>階段</span></article></div><section class="overview-section"><h2>依階段瀏覽</h2><div class="overview-stages">${stageOrder.map(stage=>{const count=visible.filter(d=>d.stage===stage).length;return count?`<button class="overview-stage" data-stage="${stage}"><strong>${stage}</strong><span>${count} 隻 →</span></button>`:''}).join('')}</div></section>`;
+  const raised=loadRaised();
+  const active=activeCultivations();
+  const cultivationRows=active.length?active.map(item=>{
+    const target=byName(item.e.to),source=byName(item.e.from);
+    const countdown=item.info.key==='done'?'可進化':formatRemaining(item.remaining);
+    return `<button class="cultivation-item status-${item.info.key}" type="button" data-cultivation-target="${target?.id||''}">
+      <span class="cultivation-state">${item.info.label}</span>
+      <strong>${esc(item.e.to)}</strong>
+      <small>${esc(item.e.from)} → ${esc(item.e.to)}</small>
+      <span class="cultivation-time">${countdown}</span>
+    </button>`;
+  }).join(''):'<div class="cultivation-empty">目前沒有培養中的進化計時。</div>';
+  $('#overviewView').innerHTML=`
+    <div class="overview-grid">
+      <article class="stat-card"><strong>${visible.length}</strong><span>數碼獸</span></article>
+      <article class="stat-card"><strong>${DATA.evolutions.filter(e=>visible.some(d=>d.name_zh===e.from)).length}</strong><span>進化條件</span></article>
+      <article class="stat-card"><strong>${raised.size} / ${DATA.digimon.length}</strong><span>已養過</span></article>
+    </div>
+    <section class="overview-section cultivation-overview"><div class="overview-title-row"><h2>目前培養</h2><span>${active.length} 項</span></div><div class="cultivation-list">${cultivationRows}</div></section>
+    <section class="overview-section"><h2>依階段瀏覽</h2><div class="overview-stages">${stageOrder.map(stage=>{const count=visible.filter(d=>d.stage===stage).length;return count?`<button class="overview-stage" data-stage="${stage}"><strong>${stage}</strong><span>${count} 隻 →</span></button>`:''}).join('')}</div></section>`;
   $$('#overviewView .overview-stage').forEach(b=>b.onclick=()=>{stageFilter=b.dataset.stage;$('#stageFilter').value=stageFilter;render();switchView('evolution');});
+  $$('[data-cultivation-target]').forEach(b=>b.onclick=()=>b.dataset.cultivationTarget&&jumpToDigimon(b.dataset.cultivationTarget));
 }
 function renderStageNav(){
   const available=stageOrder.filter(stage=>DATA.digimon.some(d=>d.stage===stage&&matches(d)));
@@ -413,12 +457,25 @@ function renderDex(){
   requestAnimationFrame(()=>setTimeout(()=>{drawTreeLines();applyDexTransform();applyTreeSelection(treeSelectedId);},80));
 }
 
+function searchSuggestionItems(){
+  const raw=$('#searchInput')?.value.trim().toLowerCase()||'';
+  if(!raw)return [];
+  return DATA.digimon.filter(d=>haystack(d).includes(raw)).slice(0,8);
+}
+function renderSearchSuggestions(){
+  const box=$('#searchSuggestions');if(!box||!DATA)return;
+  const items=searchSuggestionItems();
+  if(!$('#searchInput').value.trim()||!items.length){box.classList.add('hidden');box.innerHTML='';return;}
+  box.innerHTML=items.map(d=>`<button type="button" role="option" data-search-target="${d.id}">${sprite(d,'suggestion-sprite')}<span><strong>${esc(d.name_zh)}</strong><small>#${padNo(d.dex_no)}｜${esc(d.stage)}｜${esc(d.attribute)}</small></span></button>`).join('');
+  box.classList.remove('hidden');
+  $$('[data-search-target]').forEach(b=>b.onclick=()=>{box.classList.add('hidden');jumpToDigimon(b.dataset.searchTarget);});
+}
 function updateSummary(){
   const visible=filteredDigimon().length,parts=[];
   if(query)parts.push(`搜尋「${$('#searchInput').value.trim()}」`);if(stageFilter)parts.push(stageFilter);if(attributeFilter)parts.push(attributeFilter);
   $('#summary').textContent=parts.length?`${parts.join('／')}：${visible} 隻`:`V0 共 ${DATA.digimon.length} 隻數碼獸／${DATA.evolutions.length} 組進化條件`;
 }
-function render(){renderOverview();renderEvolution();renderDex();updateSummary();}
+function render(){renderOverview();renderEvolution();renderDex();updateSummary();renderSearchSuggestions();}
 function switchView(v,updateHash=true){
   currentView=v;$$('.tab').forEach(b=>{const active=b.dataset.view===v;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
   $('#overviewView').classList.toggle('hidden',v!=='overview');$('#evolutionView').classList.toggle('hidden',v!=='evolution');$('#dexView').classList.toggle('hidden',v!=='dex');$('#stageNav').classList.toggle('hidden',v!=='evolution');
@@ -434,8 +491,10 @@ function parseHash(){const p=new URLSearchParams(location.hash.slice(1));return 
 function restoreHash(){const {view,id}=parseHash();if(id&&DATA.digimon.some(d=>d.id===id)){switchView('evolution',false);setTimeout(()=>jumpToDigimon(id,false),80);return;}switchView(['overview','evolution','dex'].includes(view)?view:'overview',false);}
 fetch('data/v0.json').then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).then(d=>{DATA=d;const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML='<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/v0.json 已一併上傳。</span></div>';console.error(err);});
 $$('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
-$('#searchInput').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();});
-$('#clearSearch').onclick=()=>{$('#searchInput').value='';query='';render();$('#searchInput').focus();};
+$('#searchInput').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();renderSearchSuggestions();});
+$('#searchInput').addEventListener('focus',renderSearchSuggestions);
+document.addEventListener('click',e=>{if(!e.target.closest('.search-box'))$('#searchSuggestions')?.classList.add('hidden');});
+$('#clearSearch').onclick=()=>{$('#searchInput').value='';query='';render();$('#searchSuggestions').classList.add('hidden');$('#searchInput').focus();};
 $('#stageFilter').onchange=e=>{stageFilter=e.target.value;render();};
 $('#attributeFilter').onchange=e=>{attributeFilter=e.target.value;render();};
 $('#resetFilters').onclick=()=>{$('#searchInput').value='';$('#stageFilter').value='';$('#attributeFilter').value='';query=stageFilter=attributeFilter='';render();};

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="description" content="DMVault Pendulum COLOR V0 病毒剋星進化條件與圖鑑">
 <title>DMVault｜Pendulum COLOR V0 病毒剋星</title>
-<link rel="stylesheet" href="styles.css?v=028">
+<link rel="stylesheet" href="styles.css?v=029">
 </head>
 <body>
 <header class="topbar">
@@ -24,7 +24,7 @@
       <button data-view="evolution" class="tab" role="tab">進化條件</button>
       <button data-view="dex" class="tab" role="tab">圖鑑</button>
     </div>
-    <label class="search"><span>搜尋</span><span class="search-box"><input id="searchInput" type="search" autocomplete="off" placeholder="名稱、編號、階段、屬性"><button id="clearSearch" type="button" aria-label="清除搜尋">×</button></span></label>
+    <label class="search"><span>搜尋</span><span class="search-box"><input id="searchInput" type="search" autocomplete="off" placeholder="名稱、編號、階段、屬性"><button id="clearSearch" type="button" aria-label="清除搜尋">×</button><div id="searchSuggestions" class="search-suggestions hidden" role="listbox"></div></span></label>
   </section>
 
   <section class="filterbar" aria-label="篩選條件">
@@ -36,7 +36,7 @@
     <button id="collapseAll" type="button">全部收合</button>
   </section>
 
-  <section class="notice">V0 測試版：每隻標示階段；一般進化計時可暫停、冷凍與繼續；可標記已養過。</section>
+  <section class="notice">V0 Beta 打磨版：培養狀態、已養過、即時搜尋與培養總覽已整合。</section>
   <section id="summary" class="summary" aria-live="polite"></section>
   <nav id="stageNav" class="stage-nav hidden" aria-label="階段快速跳轉"></nav>
   <section id="overviewView" class="view"></section>
@@ -45,7 +45,7 @@
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <button id="backToTop" class="back-top" type="button" aria-label="返回頂端">↑</button>
-<footer>資料來源：DIGIMON PENDULUM COLOR 中文攻略｜框架版本 v0.28 Stage + Pause/Freeze + Raised</footer>
-<script src="app.js?v=028"></script>
+<footer>資料來源：DIGIMON PENDULUM COLOR 中文攻略｜框架版本 v0.29 Beta Polish</footer>
+<script src="app.js?v=029"></script>
 </body>
 </html>

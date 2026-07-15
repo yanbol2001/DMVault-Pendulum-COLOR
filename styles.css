@@ -276,3 +276,40 @@
   .timer-countdown{font-size:20px!important}
   .timer-actions button,.timer-start,.timer-reset{font-size:14px!important}
 }
+
+/* v0.29 Beta polish: cultivation overview, instant search, synchronized raised state */
+.search-box{position:relative}
+.search-suggestions{position:absolute;top:calc(100% + 5px);right:0;width:min(360px,80vw);max-height:420px;overflow:auto;background:#fff;border:2px solid #222;box-shadow:0 8px 22px rgba(0,0,0,.24);z-index:80}
+.search-suggestions button{width:100%;display:flex;align-items:center;gap:10px;padding:8px 10px;border:0;border-bottom:1px solid #ddd;background:#fff;text-align:left;cursor:pointer}
+.search-suggestions button:last-child{border-bottom:0}
+.search-suggestions button:hover,.search-suggestions button:focus{background:#eef5ff;outline:none}
+.search-suggestions .suggestion-sprite{width:44px;height:44px;flex:0 0 44px}
+.search-suggestions .suggestion-sprite img{width:40px;height:40px;image-rendering:pixelated}
+.search-suggestions span>span{display:flex;flex-direction:column;min-width:0}
+.search-suggestions strong{font-size:16px;color:#111}
+.search-suggestions small{font-size:12px;color:#555;white-space:nowrap}
+
+.overview-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.overview-title-row h2{margin:0}
+.overview-title-row>span{font-weight:800;color:#555}
+.cultivation-overview{margin-top:18px}
+.cultivation-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+.cultivation-item{position:relative;display:grid;grid-template-columns:1fr auto;grid-template-areas:'state time' 'name time' 'path time';gap:2px 10px;min-height:86px;padding:10px 12px;border:2px solid #888;background:#fff;text-align:left;cursor:pointer}
+.cultivation-item:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.cultivation-state{grid-area:state;font-size:13px;font-weight:900}
+.cultivation-item strong{grid-area:name;font-size:18px}
+.cultivation-item small{grid-area:path;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cultivation-time{grid-area:time;align-self:center;font:900 18px/1 ui-monospace,SFMono-Regular,Consolas,monospace}
+.cultivation-item.status-running{border-color:#16803c;background:#effbf3}.cultivation-item.status-running .cultivation-state{color:#16803c}
+.cultivation-item.status-frozen{border-color:#1676a8;background:#eef9ff}.cultivation-item.status-frozen .cultivation-state{color:#1676a8}
+.cultivation-item.status-done{border-color:#6b35a7;background:#f7f0ff}.cultivation-item.status-done .cultivation-state{color:#6b35a7}
+.cultivation-empty{padding:18px;border:1px dashed #aaa;color:#666;text-align:center}
+
+.route-head{position:relative}
+.route-raised-mark{position:absolute;right:4px;top:4px;width:23px;height:23px;border-radius:50%;display:grid;place-items:center;background:#2f9e44;color:#fff;border:2px solid #fff;font-size:14px;font-weight:900;box-shadow:0 1px 4px rgba(0,0,0,.25);z-index:3}
+
+@media(max-width:760px){
+  .search-suggestions{left:0;right:auto;width:min(92vw,360px)}
+  .cultivation-list{grid-template-columns:1fr}
+  .cultivation-item{min-height:78px}
+}
