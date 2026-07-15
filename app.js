@@ -158,10 +158,16 @@ function routeColumn(e){
       const attrs=attributeParts.join(' 或 ');
       rows.push([stage,attrs].filter(Boolean).join('・'));
     }
-    for(const partner of partnerParts)rows.push(`與「${partner}」合體`);
+    for(const partner of partnerParts)rows.push({type:'partner',name:partner});
     conditionRows=rows;
   }
-  const extra=conditionRows.map(part=>`<div class="jogress-note-row">${esc(part)}</div>`).join('');
+  const extra=conditionRows.map(part=>{
+    if(part&&typeof part==='object'&&part.type==='partner'){
+      const partner=byName(part.name);
+      return `<div class="jogress-note-row jogress-partner-row">${partner?sprite(partner,'jogress-partner-sprite'):''}<span>與「${esc(part.name)}」合體</span></div>`;
+    }
+    return `<div class="jogress-note-row">${esc(part)}</div>`;
+  }).join('');
   const noteClass=noteText.includes('解鎖圖鑑6 前')?'unlock-before':noteText.includes('解鎖圖鑑6 後')?'unlock-after':noteParts.length?'jogress-note':'';
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
