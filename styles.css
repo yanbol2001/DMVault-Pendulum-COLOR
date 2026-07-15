@@ -181,3 +181,23 @@
   .route-column-jogress .route-note{height:100px;min-height:100px}
   .jogress-condition{height:92px}
 }
+
+/* v0.24 frozen comparison layout + independent evolution timers */
+.evolution-sheet{position:relative}
+.source-panel{position:sticky;left:0;z-index:6;box-shadow:3px 0 0 rgba(0,0,0,.12)}
+.route-head{position:sticky;top:198px;z-index:4}
+.route-column{position:relative}
+.route-timer{height:58px;min-height:58px;border-top:1px solid #aaa;display:grid;grid-template-columns:1fr;align-content:center;gap:3px;padding:5px;background:#f6f6f6;text-align:center}
+.route-timer button{min-height:30px;border:1px solid #777;background:#fff;font-weight:700;cursor:pointer}
+.route-timer button:hover{background:#fff4c7}
+.route-timer.timer-running{background:#eef8ff}
+.route-timer.timer-done{background:#efe8ff}
+.timer-status{font-size:12px;font-weight:700}
+.timer-countdown{font:700 14px/1.1 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap}
+.timer-reset{font-size:12px;min-height:24px!important}
+.route-column-jogress::after{content:'';display:block;height:58px;min-height:58px;border-top:1px solid #aaa;background:#fafafa}
+@media(max-width:760px){
+  .source-panel{position:relative;left:auto;box-shadow:none}
+  .route-head{position:relative;top:auto}
+  .route-timer,.route-column-jogress::after{height:54px;min-height:54px}
+}

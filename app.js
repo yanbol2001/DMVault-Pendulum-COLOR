@@ -5,6 +5,51 @@ const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const padNo=n=>String(n).padStart(3,'0');
 const byName=name=>DATA?.digimon.find(d=>d.name_zh===name);
+
+const TIMER_STORAGE_KEY='dmvault-penc-v0-timers';
+let timerTickHandle=null;
+function loadTimers(){try{return JSON.parse(localStorage.getItem(TIMER_STORAGE_KEY)||'{}')}catch{return {}}}
+function saveTimers(v){localStorage.setItem(TIMER_STORAGE_KEY,JSON.stringify(v));}
+function parseDurationMs(text){
+  const value=String(text||'').trim();
+  let m=value.match(/^(\d+(?:\.\d+)?)\s*小時$/);if(m)return Number(m[1])*60*60*1000;
+  m=value.match(/^(\d+(?:\.\d+)?)\s*分鐘$/);if(m)return Number(m[1])*60*1000;
+  return 0;
+}
+function timerKey(e){return `v0:${e.id||`${e.from}>${e.to}:${e.target_column||''}`}`;}
+function timerState(e){return loadTimers()[timerKey(e)]||null;}
+function formatRemaining(ms){
+  if(ms<=0)return '可進化';
+  const total=Math.ceil(ms/1000),h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function timerMarkup(e,isJogress){
+  const duration=parseDurationMs(e.time);
+  if(isJogress||!duration)return '';
+  const state=timerState(e),remaining=state?state.endAt-Date.now():null;
+  if(!state)return `<div class="route-timer" data-timer-key="${esc(timerKey(e))}"><button class="timer-start" type="button" data-timer-start="${esc(timerKey(e))}" data-duration="${duration}">開始培養</button></div>`;
+  const done=remaining<=0;
+  return `<div class="route-timer ${done?'timer-done':'timer-running'}" data-timer-key="${esc(timerKey(e))}"><span class="timer-status">${done?'可進化':'培養中'}</span><strong class="timer-countdown" data-timer-end="${state.endAt}">${formatRemaining(remaining)}</strong><button class="timer-reset" type="button" data-timer-reset="${esc(timerKey(e))}">重設</button></div>`;
+}
+function bindEvolutionTimers(){
+  $$('[data-timer-start]').forEach(b=>b.onclick=()=>{
+    const timers=loadTimers();timers[b.dataset.timerStart]={endAt:Date.now()+Number(b.dataset.duration)};saveTimers(timers);renderEvolution();
+  });
+  $$('[data-timer-reset]').forEach(b=>b.onclick=()=>{
+    const timers=loadTimers();delete timers[b.dataset.timerReset];saveTimers(timers);renderEvolution();
+  });
+  clearInterval(timerTickHandle);
+  timerTickHandle=setInterval(()=>{
+    let needsRender=false;
+    $$('[data-timer-end]').forEach(el=>{
+      const left=Number(el.dataset.timerEnd)-Date.now();
+      el.textContent=formatRemaining(left);
+      if(left<=0&&!el.closest('.route-timer')?.classList.contains('timer-done'))needsRender=true;
+    });
+    if(needsRender)renderEvolution();
+  },1000);
+}
+
 function sprite(d,cls=''){return `<span class="sprite ${cls}"><img src="${esc(d.image)}" alt="${esc(d.name_zh)}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('sprite-error');this.parentElement.dataset.no='${padNo(d.dex_no)}'"></span>`;}
 function haystack(d){
   const incoming=DATA.evolutions.filter(e=>e.to===d.name_zh).map(e=>e.from).join(' ');
@@ -67,6 +112,7 @@ function routeColumn(e){
       ? `<div class="jogress-condition"><img src="images/ui/jogres.png" alt="JOGRES"></div>`
       : `<div class="route-fields">${fields.map(([k,v])=>`<div class="route-label">${k}</div><div class="route-value ${(!v||v==='-')?'muted':''}">${esc(v||'-')}</div>`).join('')}</div>`}
     <div class="route-note ${noteClass}">${extra||'&nbsp;'}</div>
+    ${timerMarkup(e,isJogress)}
   </div>`;
 }
 function renderOverview(){
@@ -96,6 +142,7 @@ function renderEvolution(){
   $('#evolutionView').innerHTML=html||'<div class="empty">找不到符合項目</div>';
   $$('.route-link').forEach(b=>b.onclick=()=>jumpToDigimon(b.dataset.target));
   $$('[data-share]').forEach(b=>b.onclick=()=>{const d=DATA.digimon.find(x=>x.id===b.dataset.share);if(d)shareDigimon(d);});
+  bindEvolutionTimers();
   renderStageNav();
 }
 let treeSelectedId='';
