@@ -65,7 +65,7 @@
 .dex-tree-lines .evo-line-label text{font-size:11px}
 
 
-/* v0.17 interactive skill-tree prototype */
+/* v0.18 direct left-button drag canvas */
 .dex-map-canvas{position:relative;min-width:100%;min-height:100%}
 .dex-map-board{transform-origin:0 0;will-change:transform}
 .dex-map-viewport{cursor:grab;overscroll-behavior:contain;touch-action:none;overflow:auto}
@@ -82,3 +82,8 @@
 .dex-tree-lines .evo-line-label.active rect{filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 4px var(--edge-color,#135adb))}
 .dex-tree-lines .evo-line-label.dimmed{opacity:.08}
 @media(max-width:760px){.tree-actions{margin-left:0}.dex-tree-toolbar .dex-tree-hint{font-size:11px}.dex-map-viewport{touch-action:pan-x pan-y}.dex-map-canvas{min-width:720px}}
+
+/* v0.18: every point inside the dex canvas can start panning */
+.dex-map-viewport .dex-map-node{cursor:grab}
+.dex-map-viewport.dragging,.dex-map-viewport.dragging .dex-map-node{cursor:grabbing!important}
+.dex-map-viewport.dragging *{user-select:none!important}

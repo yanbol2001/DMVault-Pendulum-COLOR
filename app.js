@@ -276,11 +276,35 @@ function setDexScale(next,anchor=null){
 }
 function bindDexPanZoom(){
   const viewport=$('.dex-map-viewport');if(!viewport)return;
-  let dragging=false,startX=0,startY=0,startLeft=0,startTop=0;
-  viewport.addEventListener('pointerdown',e=>{if(e.target.closest('.dex-map-node,button'))return;dragging=true;startX=e.clientX;startY=e.clientY;startLeft=viewport.scrollLeft;startTop=viewport.scrollTop;viewport.setPointerCapture(e.pointerId);viewport.classList.add('dragging');});
-  viewport.addEventListener('pointermove',e=>{if(!dragging)return;viewport.scrollLeft=startLeft-(e.clientX-startX);viewport.scrollTop=startTop-(e.clientY-startY);});
-  const stop=e=>{dragging=false;viewport.classList.remove('dragging');try{viewport.releasePointerCapture(e.pointerId)}catch{}};
+  let pointerActive=false,dragging=false,suppressClick=false,startX=0,startY=0,startLeft=0,startTop=0;
+  const DRAG_THRESHOLD=5;
+  viewport.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    pointerActive=true;dragging=false;suppressClick=false;
+    startX=e.clientX;startY=e.clientY;startLeft=viewport.scrollLeft;startTop=viewport.scrollTop;
+    viewport.setPointerCapture(e.pointerId);
+  });
+  viewport.addEventListener('pointermove',e=>{
+    if(!pointerActive)return;
+    const dx=e.clientX-startX,dy=e.clientY-startY;
+    if(!dragging&&Math.hypot(dx,dy)>=DRAG_THRESHOLD){dragging=true;suppressClick=true;viewport.classList.add('dragging');}
+    if(!dragging)return;
+    e.preventDefault();
+    viewport.scrollLeft=startLeft-dx;viewport.scrollTop=startTop-dy;
+  });
+  const stop=e=>{
+    pointerActive=false;dragging=false;viewport.classList.remove('dragging');
+    try{viewport.releasePointerCapture(e.pointerId)}catch{}
+  };
   viewport.addEventListener('pointerup',stop);viewport.addEventListener('pointercancel',stop);
+  viewport.addEventListener('click',e=>{
+    if(!suppressClick)return;
+    suppressClick=false;e.preventDefault();e.stopPropagation();
+  },true);
+  viewport.addEventListener('dblclick',e=>{
+    if(!suppressClick)return;
+    suppressClick=false;e.preventDefault();e.stopPropagation();
+  },true);
   viewport.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const r=viewport.getBoundingClientRect();setDexScale(dexScale+(e.deltaY<0?DEX_SCALE_STEP:-DEX_SCALE_STEP),{x:e.clientX-r.left,y:e.clientY-r.top});},{passive:false});
 }
 function renderDex(){
