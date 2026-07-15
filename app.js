@@ -150,13 +150,22 @@ function routeColumn(e){
   const stagePart=noteParts.find(x=>/(幼年期|成長期|成熟期|完全體|究極體|超究極體)/.test(x));
   const attributeParts=noteParts.filter(x=>/(疫苗種|資料種|病毒種|自由種)/.test(x));
   const partnerParts=noteParts.filter(x=>x!==stagePart&&!attributeParts.includes(x)&&x!=='或');
+  const partnerVersionInfo={
+    '淑女惡魔獸':{version:'V3',name:'噩夢軍團'},
+    '鋼鐵悟空獸':{version:'V1',name:'自然靈魂'},
+    '黃金鄉獸':{version:'V1',name:'自然靈魂'},
+    '黃金劍獅獸':{version:'V1',name:'自然靈魂'}
+  };
+  const conditionOnlyJogress=Boolean(stagePart||attributeParts.length);
   let conditionRows=noteParts;
   if(isJogress){
     const rows=['合體條件'];
-    if(stagePart||attributeParts.length){
+    if(conditionOnlyJogress){
       const stage=stagePart?stagePart.replace(/的$/,''):'';
       const attrs=attributeParts.join(' 或 ');
       rows.push([stage,attrs].filter(Boolean).join('・'));
+      rows.push('不限指定數碼獸');
+      if(['鋼鐵悟空獸','黃金鄉獸'].includes(e.to))rows.push('可使用備份檔與自己合體');
     }
     for(const partner of partnerParts)rows.push({type:'partner',name:partner});
     conditionRows=rows;
@@ -164,9 +173,12 @@ function routeColumn(e){
   const extra=conditionRows.map(part=>{
     if(part&&typeof part==='object'&&part.type==='partner'){
       const partner=byName(part.name);
-      return `<div class="jogress-note-row jogress-partner-row">${partner?sprite(partner,'jogress-partner-sprite'):''}<span>與「${esc(part.name)}」合體</span></div>`;
+      const source=partnerVersionInfo[part.name];
+      const sourceText=source?`<small class="jogress-partner-version">${esc(source.version)} ${esc(source.name)}</small>`:'';
+      return `<div class="jogress-note-row jogress-partner-row">${partner?sprite(partner,'jogress-partner-sprite'):''}<span>與「${esc(part.name)}」合體${sourceText}</span></div>`;
     }
-    return `<div class="jogress-note-row">${esc(part)}</div>`;
+    const cls=part==='不限指定數碼獸'?' jogress-generic-note':part==='可使用備份檔與自己合體'?' jogress-backup-note':'';
+    return `<div class="jogress-note-row${cls}">${esc(part)}</div>`;
   }).join('');
   const noteClass=noteText.includes('解鎖圖鑑6 前')?'unlock-before':noteText.includes('解鎖圖鑑6 後')?'unlock-after':noteParts.length?'jogress-note':'';
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">

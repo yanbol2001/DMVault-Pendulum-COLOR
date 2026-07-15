@@ -536,3 +536,24 @@
   .route-bottom{flex-basis:90px!important;height:90px!important;min-height:90px!important}
   .route-bottom-jogress .jogress-note-row{font-size:13px!important}
 }
+
+
+/* v0.39: distinguish condition-based and specified-partner Jogress */
+.jogress-partner-row span{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.jogress-partner-version{display:block;font-size:12px;line-height:1.1;color:#174eb6;font-weight:700}
+.jogress-generic-note{color:#333;font-size:13px!important}
+.jogress-backup-note{color:#7a3e00;font-size:13px!important;font-weight:700!important}
+.route-bottom-jogress .route-note{overflow:hidden!important}
+.route-bottom-jogress .jogress-note-row{line-height:1.18!important}
+
+/* slightly smaller cultivation status frame while retaining uniform card height */
+.route-bottom .route-timer{padding:3px 4px!important;gap:3px!important}
+.route-bottom .route-timer .timer-status{font-size:14px!important;line-height:1!important}
+.route-bottom .route-timer .timer-countdown{font-size:19px!important;line-height:1!important}
+.route-bottom .route-timer .timer-actions{gap:3px!important}
+.route-bottom .route-timer .timer-actions button{min-height:27px!important;padding:2px!important;font-size:13px!important}
+.route-bottom .route-timer .timer-start{min-height:36px!important}
+@media(max-width:760px){
+  .jogress-partner-version{font-size:11px}
+  .jogress-generic-note,.jogress-backup-note{font-size:12px!important}
+}
