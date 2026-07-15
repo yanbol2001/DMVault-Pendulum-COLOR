@@ -127,7 +127,7 @@ function sourceInfoTable(d){
     <div class="source-body">
       <div class="source-side">
         ${sprite(d,'source-sprite')}
-        <label class="raised-toggle"><input type="checkbox" data-raised="${d.id}" ${isRaised(d.id)?'checked':''}><span>已養過</span></label><span class="stage-tag">${esc(d.stage)}</span>
+        <button class="raised-corner-button ${isRaised(d.id)?'is-raised':''}" type="button" data-raised-action="${d.id}" aria-pressed="${isRaised(d.id)?'true':'false'}" title="${isRaised(d.id)?'取消已養過':'標記已養過'}">✓</button><span class="stage-tag">${esc(d.stage)}</span>
         <span class="attribute-tag">${esc(d.attribute)}</span>
         <span class="strength-label">強度</span><strong class="strength-value">${esc(d.strength||'-')}</strong>
         <span class="attack-label">攻擊圖案</span><span class="attack-icon"><img src="${esc(d.attack_image||'')}" alt="攻擊圖案" onerror="this.parentElement.textContent='-'"></span>
@@ -149,7 +149,7 @@ function routeColumn(e){
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}
-      ${target&&isRaised(target.id)?'<span class="route-raised-mark" aria-label="已養過">✓</span>':''}
+      ${target?`<span class="route-raised-toggle ${isRaised(target.id)?'is-raised':''}" data-raised-action="${target.id}" role="button" tabindex="0" aria-pressed="${isRaised(target.id)?'true':'false'}" title="${isRaised(target.id)?'取消已養過':'標記已養過'}">✓</span>`:''}
       <strong>${esc(e.to)}</strong>${target?`<span class="route-stage">${esc(target.stage)}</span>`:''}
     </button>
     ${isJogress
@@ -207,7 +207,11 @@ function renderEvolution(){
   $$('.route-link').forEach(b=>b.onclick=()=>jumpToDigimon(b.dataset.target));
   $$('[data-share]').forEach(b=>b.onclick=()=>{const d=DATA.digimon.find(x=>x.id===b.dataset.share);if(d)shareDigimon(d);});
   bindEvolutionTimers();
-  $$('[data-raised]').forEach(c=>c.onchange=()=>toggleRaised(c.dataset.raised));
+  $$('[data-raised-action]').forEach(el=>{
+    const activate=ev=>{ev.preventDefault();ev.stopPropagation();toggleRaised(el.dataset.raisedAction)};
+    el.onclick=activate;
+    el.onkeydown=ev=>{if(ev.key==='Enter'||ev.key===' '){activate(ev)}};
+  });
   renderStageNav();
 }
 let treeSelectedId='';
