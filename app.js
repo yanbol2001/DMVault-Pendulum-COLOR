@@ -6,10 +6,15 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 const padNo=n=>String(n).padStart(3,'0');
 const byName=name=>DATA?.digimon.find(d=>d.name_zh===name);
 
-const TIMER_STORAGE_KEY='dmvault-penc-v0-timers';
+const TIMER_STORAGE_KEY='dmvault-penc-v0-timers-v2';
+const RAISED_STORAGE_KEY='dmvault-penc-v0-raised';
 let timerTickHandle=null;
 function loadTimers(){try{return JSON.parse(localStorage.getItem(TIMER_STORAGE_KEY)||'{}')}catch{return {}}}
 function saveTimers(v){localStorage.setItem(TIMER_STORAGE_KEY,JSON.stringify(v));}
+function loadRaised(){try{return new Set(JSON.parse(localStorage.getItem(RAISED_STORAGE_KEY)||'[]'))}catch{return new Set()}}
+function saveRaised(set){localStorage.setItem(RAISED_STORAGE_KEY,JSON.stringify([...set]));}
+function isRaised(id){return loadRaised().has(id)}
+function toggleRaised(id){const set=loadRaised();set.has(id)?set.delete(id):set.add(id);saveRaised(set);render();}
 function parseDurationMs(text){
   const value=String(text||'').trim();
   let m=value.match(/^(\d+(?:\.\d+)?)\s*小時$/);if(m)return Number(m[1])*60*60*1000;
@@ -17,7 +22,17 @@ function parseDurationMs(text){
   return 0;
 }
 function timerKey(e){return `v0:${e.id||`${e.from}>${e.to}:${e.target_column||''}`}`;}
-function timerState(e){return loadTimers()[timerKey(e)]||null;}
+function normalizeTimer(state){
+  if(!state)return null;
+  if(state.endAt&&!state.status)return {status:'running',endAt:state.endAt,duration:Math.max(0,state.endAt-Date.now())};
+  return state;
+}
+function timerState(e){return normalizeTimer(loadTimers()[timerKey(e)]||null);}
+function timerRemaining(state){
+  if(!state)return 0;
+  if(state.status==='running')return Math.max(0,Number(state.endAt)-Date.now());
+  return Math.max(0,Number(state.remainingMs)||0);
+}
 function formatRemaining(ms){
   if(ms<=0)return '可進化';
   const total=Math.ceil(ms/1000),h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;
@@ -26,30 +41,35 @@ function formatRemaining(ms){
 function timerMarkup(e,isJogress){
   const duration=parseDurationMs(e.time);
   if(isJogress||!duration)return '';
-  const state=timerState(e),remaining=state?state.endAt-Date.now():null;
-  if(!state)return `<div class="route-timer" data-timer-key="${esc(timerKey(e))}"><button class="timer-start" type="button" data-timer-start="${esc(timerKey(e))}" data-duration="${duration}">開始培養</button></div>`;
-  const done=remaining<=0;
-  return `<div class="route-timer ${done?'timer-done':'timer-running'}" data-timer-key="${esc(timerKey(e))}"><span class="timer-status">${done?'可進化':'培養中'}</span><strong class="timer-countdown" data-timer-end="${state.endAt}">${formatRemaining(remaining)}</strong><button class="timer-reset" type="button" data-timer-reset="${esc(timerKey(e))}">重設</button></div>`;
+  const key=timerKey(e),state=timerState(e);
+  if(!state)return `<div class="route-timer" data-timer-key="${esc(key)}"><button class="timer-start" type="button" data-timer-start="${esc(key)}" data-duration="${duration}">開始培養</button></div>`;
+  const remaining=timerRemaining(state),done=remaining<=0||state.status==='done';
+  if(done)return `<div class="route-timer timer-done" data-timer-key="${esc(key)}"><span class="timer-status">可進化</span><strong class="timer-countdown">完成</strong><button class="timer-reset" type="button" data-timer-reset="${esc(key)}">重新開始</button></div>`;
+  const label=state.status==='frozen'?'已冷凍':state.status==='paused'?'已暫停':'培養中';
+  const cls=state.status==='frozen'?'timer-frozen':state.status==='paused'?'timer-paused':'timer-running';
+  const mainAction=state.status==='running'
+    ?`<button type="button" data-timer-pause="${esc(key)}">暫停</button>`
+    :`<button type="button" data-timer-resume="${esc(key)}">${state.status==='frozen'?'解除冷凍':'繼續'}</button>`;
+  const freezeAction=state.status==='frozen'?'':`<button type="button" data-timer-freeze="${esc(key)}">冷凍</button>`;
+  const endAttr=state.status==='running'?`data-timer-end="${state.endAt}"`:'';
+  return `<div class="route-timer ${cls}" data-timer-key="${esc(key)}"><span class="timer-status">${label}</span><strong class="timer-countdown" ${endAttr}>${formatRemaining(remaining)}</strong><div class="timer-actions">${mainAction}${freezeAction}<button class="timer-reset" type="button" data-timer-reset="${esc(key)}">重設</button></div></div>`;
 }
+function updateTimer(key,fn){const timers=loadTimers(),state=normalizeTimer(timers[key]);timers[key]=fn(state);if(timers[key])saveTimers(timers);else{delete timers[key];saveTimers(timers)}renderEvolution();}
+function pauseTimer(key,status='paused'){updateTimer(key,state=>state?{...state,status,remainingMs:timerRemaining(state),endAt:null}:state)}
+function resumeTimer(key){updateTimer(key,state=>state?{...state,status:'running',endAt:Date.now()+timerRemaining(state)}:state)}
 function bindEvolutionTimers(){
-  $$('[data-timer-start]').forEach(b=>b.onclick=()=>{
-    const timers=loadTimers();timers[b.dataset.timerStart]={endAt:Date.now()+Number(b.dataset.duration)};saveTimers(timers);renderEvolution();
-  });
-  $$('[data-timer-reset]').forEach(b=>b.onclick=()=>{
-    const timers=loadTimers();delete timers[b.dataset.timerReset];saveTimers(timers);renderEvolution();
-  });
+  $$('[data-timer-start]').forEach(b=>b.onclick=()=>{const timers=loadTimers();timers[b.dataset.timerStart]={status:'running',endAt:Date.now()+Number(b.dataset.duration),duration:Number(b.dataset.duration)};saveTimers(timers);renderEvolution();});
+  $$('[data-timer-pause]').forEach(b=>b.onclick=()=>pauseTimer(b.dataset.timerPause,'paused'));
+  $$('[data-timer-freeze]').forEach(b=>b.onclick=()=>pauseTimer(b.dataset.timerFreeze,'frozen'));
+  $$('[data-timer-resume]').forEach(b=>b.onclick=()=>resumeTimer(b.dataset.timerResume));
+  $$('[data-timer-reset]').forEach(b=>b.onclick=()=>{const timers=loadTimers();delete timers[b.dataset.timerReset];saveTimers(timers);renderEvolution();});
   clearInterval(timerTickHandle);
   timerTickHandle=setInterval(()=>{
     let needsRender=false;
-    $$('[data-timer-end]').forEach(el=>{
-      const left=Number(el.dataset.timerEnd)-Date.now();
-      el.textContent=formatRemaining(left);
-      if(left<=0&&!el.closest('.route-timer')?.classList.contains('timer-done'))needsRender=true;
-    });
-    if(needsRender)renderEvolution();
+    $$('[data-timer-end]').forEach(el=>{const left=Number(el.dataset.timerEnd)-Date.now();el.textContent=formatRemaining(left);if(left<=0)needsRender=true;});
+    if(needsRender){const timers=loadTimers();for(const [k,v0] of Object.entries(timers)){const v=normalizeTimer(v0);if(v?.status==='running'&&timerRemaining(v)<=0)timers[k]={...v,status:'done',remainingMs:0,endAt:null};}saveTimers(timers);renderEvolution();}
   },1000);
 }
-
 function sprite(d,cls=''){return `<span class="sprite ${cls}"><img src="${esc(d.image)}" alt="${esc(d.name_zh)}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('sprite-error');this.parentElement.dataset.no='${padNo(d.dex_no)}'"></span>`;}
 function haystack(d){
   const incoming=DATA.evolutions.filter(e=>e.to===d.name_zh).map(e=>e.from).join(' ');
@@ -79,12 +99,12 @@ function displayMinutes(v){
 function sourceInfoTable(d){
   const jogress=`${d.can_battle||'X'} / ${d.can_jogress||'X'}`;
   return `<div class="source-panel">
-    <div class="source-title-zh">${esc(d.name_zh)}</div>
+    <div class="source-title-zh"><span>${esc(d.name_zh)}</span><span class="stage-pill stage-${esc(d.stage)}">${esc(d.stage)}</span></div>
     <div class="source-title-jp">${esc(d.name_jp)}</div>
     <div class="source-body">
       <div class="source-side">
         ${sprite(d,'source-sprite')}
-        <span class="stage-tag">${esc(d.stage)}</span>
+        <label class="raised-toggle"><input type="checkbox" data-raised="${d.id}" ${isRaised(d.id)?'checked':''}><span>已養過</span></label><span class="stage-tag">${esc(d.stage)}</span>
         <span class="attribute-tag">${esc(d.attribute)}</span>
         <span class="strength-label">強度</span><strong class="strength-value">${esc(d.strength||'-')}</strong>
         <span class="attack-label">攻擊圖案</span><span class="attack-icon"><img src="${esc(d.attack_image||'')}" alt="攻擊圖案" onerror="this.parentElement.textContent='-'"></span>
@@ -106,7 +126,7 @@ function routeColumn(e){
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}
-      <strong>${esc(e.to)}</strong>
+      <strong>${esc(e.to)}</strong>${target?`<span class="route-stage">${esc(target.stage)}</span>`:''}
     </button>
     ${isJogress
       ? `<div class="jogress-condition"><img src="images/ui/jogres.png" alt="JOGRES"></div>`
@@ -143,6 +163,7 @@ function renderEvolution(){
   $$('.route-link').forEach(b=>b.onclick=()=>jumpToDigimon(b.dataset.target));
   $$('[data-share]').forEach(b=>b.onclick=()=>{const d=DATA.digimon.find(x=>x.id===b.dataset.share);if(d)shareDigimon(d);});
   bindEvolutionTimers();
+  $$('[data-raised]').forEach(c=>c.onchange=()=>toggleRaised(c.dataset.raised));
   renderStageNav();
 }
 let treeSelectedId='';
@@ -366,7 +387,7 @@ function renderDex(){
   const list=filteredDigimon();
   if(!list.length){$('#dexView').innerHTML='<div class="empty">找不到符合項目</div>';return;}
   const positions=stageLayout(list);
-  const nodes=list.map(d=>{const p=positions.get(d.id);return `<button class="dex-map-node attr-${esc(d.attribute)}" data-id="${d.id}" type="button" style="--x:${p.x};--y:${p.y}" title="#${padNo(d.dex_no)} ${esc(d.name_zh)}｜點一下高亮，連點前往進化條件">${sprite(d,'dex-map-sprite')}<span>${esc(d.name_zh)}</span></button>`;}).join('');
+  const nodes=list.map(d=>{const p=positions.get(d.id);const raised=isRaised(d.id);return `<button class="dex-map-node attr-${esc(d.attribute)} ${raised?'raised':''}" data-id="${d.id}" type="button" style="--x:${p.x};--y:${p.y}" title="#${padNo(d.dex_no)} ${esc(d.name_zh)}｜點一下高亮，連點前往進化條件">${sprite(d,'dex-map-sprite')}<span>${esc(d.name_zh)}</span>${raised?'<span class="raised-mark">✓</span>':''}</button>`;}).join('');
   const stageLabels=stageOrder.map((stage,i)=>list.some(d=>d.stage===stage)?`<span class="dex-stage-label" style="--x:${i*(100/Math.max(1,stageOrder.length-1))}">${stage}</span>`:'').join('');
   $('#dexView').innerHTML=`<section class="dex-map-shell ${dexWireMode}">
     <div class="dex-tree-toolbar"><strong>進化技能樹</strong><div class="wire-switch" role="group" aria-label="圖鑑顯示模式"><button class="${dexWireMode==='wireless'?'active':''}" data-wire="wireless" type="button">無線</button><button class="${dexWireMode==='wired'?'active':''}" data-wire="wired" type="button">有線</button></div>
