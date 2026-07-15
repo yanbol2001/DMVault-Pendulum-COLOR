@@ -123,3 +123,32 @@
   .route-note{height:54px;min-height:54px}
 }
 @media(max-width:430px){.route-area{grid-template-columns:1fr}}
+
+/* v0.22 Jogress condition artwork */
+.jogress-condition{
+  height:105px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-bottom:1px solid #c9c9c9;
+  background:#fff;
+  overflow:hidden;
+}
+.jogress-condition img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:fill;
+  image-rendering:pixelated;
+}
+.route-column-jogress .route-note{
+  min-height:68px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:5px 3px;
+}
+@media(max-width:760px){
+  .jogress-condition{height:96px}
+}

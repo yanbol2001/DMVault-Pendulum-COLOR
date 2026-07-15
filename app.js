@@ -56,13 +56,16 @@ function routeColumn(e){
   const noteParts=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
   const extra=noteParts.join('<br>');
   const noteText=noteParts.join(' ');
+  const isJogress=!fields.some(([,v])=>String(v||'').trim()&&String(v).trim()!=='-') && /(幼年期|成長期|成熟期|完全體|究極體|超究極體)的/.test(noteText) && /(疫苗種|資料種|病毒種|自由種)/.test(noteText);
   const noteClass=noteText.includes('解鎖圖鑑6 前')?'unlock-before':noteText.includes('解鎖圖鑑6 後')?'unlock-after':noteParts.length?'jogress-note':'';
-  return `<div class="route-column">
+  return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}
       <strong>${esc(e.to)}</strong>
     </button>
-    <div class="route-fields">${fields.map(([k,v])=>`<div class="route-label">${k}</div><div class="route-value ${(!v||v==='-')?'muted':''}">${esc(v||'-')}</div>`).join('')}</div>
+    ${isJogress
+      ? `<div class="jogress-condition"><img src="images/ui/jogres.png" alt="JOGRES"></div>`
+      : `<div class="route-fields">${fields.map(([k,v])=>`<div class="route-label">${k}</div><div class="route-value ${(!v||v==='-')?'muted':''}">${esc(v||'-')}</div>`).join('')}</div>`}
     <div class="route-note ${noteClass}">${extra||'&nbsp;'}</div>
   </div>`;
 }
