@@ -1,5 +1,5 @@
 const stageOrder=['幼年期1','幼年期2','成長期','成熟期','完全體','究極體','超究極體'];
-let DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
+let DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='', currentEvolutionId='';
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -16,9 +16,12 @@ function filteredDigimon(){return DATA.digimon.filter(matches);}
 function showToast(text){const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),1800);}
 function canonicalHash(view,id=''){return id?`#digimon=${encodeURIComponent(id)}`:`#view=${view}`;}
 function jumpToDigimon(id,push=true){
+  if(!DATA?.digimon.some(d=>d.id===id))return;
+  currentEvolutionId=id;
   switchView('evolution',false);
+  renderEvolution();
   if(push)history.replaceState(null,'',canonicalHash('evolution',id));
-  requestAnimationFrame(()=>{const el=document.getElementById(`evo-${id}`);if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1000);}});
+  requestAnimationFrame(()=>{document.querySelector('.evo-detail-page')?.scrollIntoView({behavior:'smooth',block:'start'});});
 }
 async function shareDigimon(d){
   const url=new URL(location.href);url.hash=`digimon=${encodeURIComponent(d.id)}`;
@@ -76,25 +79,75 @@ function renderStageNav(){
   $('#stageNav').innerHTML=available.map(stage=>`<button data-stage="${stage}">${stage}</button>`).join('');
   $$('#stageNav button').forEach(b=>b.onclick=()=>document.getElementById(`stage-${b.dataset.stage}`)?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
-function renderEvolution(){
-  let html='';
-  for(const stage of stageOrder){
-    const list=DATA.digimon.filter(d=>d.stage===stage&&matches(d)); if(!list.length)continue;
-    html+=`<section class="stage-section" id="stage-${stage}"><h2 class="stage-heading"><span>${stage}</span><small>${list.length} 隻</small></h2>`;
-    for(const d of list){
-      const routes=DATA.evolutions.filter(e=>e.from===d.name_zh);
-      html+=`<article class="evolution-sheet" id="evo-${d.id}">
-        <div class="sheet-scroll"><div class="sheet-row">${sourceInfoTable(d)}<div class="route-area">${routes.length?routes.map(routeColumn).join(''):`<div class="no-route">此階段無後續進化資料</div>`}</div></div></div>
-        <div class="sheet-actions"><button type="button" data-share="${d.id}">分享這隻</button></div>
-      </article>`;
-    }
-    html+='</section>';
-  }
-  $('#evolutionView').innerHTML=html||'<div class="empty">找不到符合項目</div>';
-  $$('.route-link').forEach(b=>b.onclick=()=>jumpToDigimon(b.dataset.target));
-  $$('[data-share]').forEach(b=>b.onclick=()=>{const d=DATA.digimon.find(x=>x.id===b.dataset.share);if(d)shareDigimon(d);});
-  renderStageNav();
+function detailStatRows(d){
+  const jogress=`${d.can_battle||'X'} / ${d.can_jogress||'X'}`;
+  return [
+    ['圖鑑編號',padNo(d.dex_no)],['階段',d.stage],['屬性',d.attribute],['強度',d.strength||'-'],
+    ['體重',d.minimum_weight],['DP值',d.dp],['基礎照顧心',d.base_care_hearts],
+    ['飢餓倒數',d.hunger_strength_timer_min],['大便倒數',d.poop_timer_min],
+    ['戰鬥／合體',jogress],['入睡時間',d.sleep_start],['起床時間',d.sleep_end]
+  ];
 }
+function miniDigimonCard(d,kind='outgoing'){
+  return `<button class="mini-digimon-card" type="button" data-detail-target="${d.id}">
+    ${sprite(d,'mini-card-sprite')}<strong>${esc(d.name_zh)}</strong><small>#${padNo(d.dex_no)}｜${esc(d.stage)}</small>
+  </button>`;
+}
+function conditionAccordion(e,index){
+  const target=byName(e.to);
+  const fields=[['照顧',e.care_mistakes],['努力',e.effort],['戰鬥',e.battles],['勝率',e.win_rate],['時間',e.time]];
+  const notes=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
+  const noteText=notes.join(' '), noteClass=noteText.includes('解鎖圖鑑6 前')?'unlock-before':noteText.includes('解鎖圖鑑6 後')?'unlock-after':'';
+  return `<details class="condition-accordion" ${index===0?'open':''}>
+    <summary>${target?sprite(target,'accordion-sprite'):''}<span><strong>${esc(e.to)}</strong><small>查看原攻略條件</small></span></summary>
+    <div class="condition-body">
+      <div class="condition-grid">${fields.map(([k,v])=>`<div class="condition-label">${k}</div><div class="condition-value ${(!v||v==='-')?'muted':''}">${esc(v||'-')}</div>`).join('')}</div>
+      ${notes.length?`<div class="condition-note ${noteClass}">${notes.map(esc).join('<br>')}</div>`:''}
+      ${target?`<button class="condition-go" type="button" data-detail-target="${target.id}">切換到 ${esc(target.name_zh)}</button>`:''}
+    </div>
+  </details>`;
+}
+function incomingCard(e){
+  const source=byName(e.from); if(!source)return '';
+  return `<button class="incoming-card" type="button" data-detail-target="${source.id}">${sprite(source,'incoming-sprite')}<span><strong>${esc(source.name_zh)}</strong><small>${esc(conditionSummary(e))}</small></span></button>`;
+}
+function renderEvolution(){
+  const list=filteredDigimon().sort((a,b)=>a.dex_no-b.dex_no);
+  if(!list.length){$('#evolutionView').innerHTML='<div class="empty">找不到符合項目</div>';return;}
+  if(!currentEvolutionId||!list.some(d=>d.id===currentEvolutionId))currentEvolutionId=list[0].id;
+  const d=list.find(x=>x.id===currentEvolutionId)||list[0];
+  const allIndex=DATA.digimon.slice().sort((a,b)=>a.dex_no-b.dex_no);
+  const globalIndex=allIndex.findIndex(x=>x.id===d.id);
+  const prev=allIndex[(globalIndex-1+allIndex.length)%allIndex.length];
+  const next=allIndex[(globalIndex+1)%allIndex.length];
+  const routes=DATA.evolutions.filter(e=>e.from===d.name_zh);
+  const incoming=DATA.evolutions.filter(e=>e.to===d.name_zh);
+  const targets=[...new Map(routes.map(e=>[e.to,byName(e.to)])).values()].filter(Boolean);
+  $('#evolutionView').innerHTML=`<article class="evo-detail-page" id="evo-${d.id}">
+    <header class="detail-nav">
+      <button type="button" data-detail-target="${prev.id}">← ${esc(prev.name_zh)}</button>
+      <div><small>${globalIndex+1} / ${allIndex.length}</small><strong>#${padNo(d.dex_no)} ${esc(d.name_zh)}</strong></div>
+      <button type="button" data-detail-target="${next.id}">${esc(next.name_zh)} →</button>
+    </header>
+    <div class="detail-hero">
+      <aside class="detail-profile">
+        <div class="profile-name"><h1>${esc(d.name_zh)}</h1><p>${esc(d.name_jp)}</p></div>
+        <div class="profile-sprite">${sprite(d,'detail-main-sprite')}</div>
+        <div class="profile-attack"><span>攻擊圖案</span><img src="${esc(d.attack_image||'')}" alt="攻擊圖案" onerror="this.parentElement.classList.add('no-attack');this.remove()"></div>
+        <div class="profile-actions"><button type="button" id="detailShowDex">在圖鑑中查看</button><button type="button" data-share="${d.id}">分享這隻</button></div>
+      </aside>
+      <section class="detail-info"><h2>基本資料</h2><div class="detail-stat-grid">${detailStatRows(d).map(([k,v])=>`<div class="detail-stat-label">${esc(k)}</div><div class="detail-stat-value">${esc(v??'-')}</div>`).join('')}</div></section>
+    </div>
+    <section class="detail-section"><div class="section-title"><h2>可進化</h2><span>${targets.length} 隻／${routes.length} 組條件</span></div><div class="mini-card-grid">${targets.length?targets.map(miniDigimonCard).join(''):'<p class="empty-inline">此階段無後續進化資料</p>'}</div></section>
+    <section class="detail-section"><div class="section-title"><h2>進化條件</h2><span>保留原試算表格式</span></div><div class="condition-list">${routes.length?routes.map(conditionAccordion).join(''):'<p class="empty-inline">無進化條件</p>'}</div></section>
+    <section class="detail-section"><div class="section-title"><h2>可由哪些數碼獸進化</h2><span>${incoming.length} 組來源</span></div><div class="incoming-grid">${incoming.length?incoming.map(incomingCard).join(''):'<p class="empty-inline">沒有前一階資料</p>'}</div></section>
+  </article>`;
+  $$('[data-detail-target]').forEach(b=>b.onclick=()=>jumpToDigimon(b.dataset.detailTarget));
+  $$('[data-share]').forEach(b=>b.onclick=()=>shareDigimon(d));
+  $('#detailShowDex').onclick=()=>{treeSelectedId=d.id;switchView('dex');setTimeout(()=>applyTreeSelection(d.id),120);};
+  $('#stageNav').innerHTML='';
+}
+
 let treeSelectedId='';
 let treeHoverId='';
 let dexWireMode='wireless';
@@ -361,7 +414,7 @@ function populateFilters(){
 }
 function parseHash(){const p=new URLSearchParams(location.hash.slice(1));return {view:p.get('view'),id:p.get('digimon')};}
 function restoreHash(){const {view,id}=parseHash();if(id&&DATA.digimon.some(d=>d.id===id)){switchView('evolution',false);setTimeout(()=>jumpToDigimon(id,false),80);return;}switchView(['overview','evolution','dex'].includes(view)?view:'overview',false);}
-fetch('data/v0.json').then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).then(d=>{DATA=d;const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML='<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/v0.json 已一併上傳。</span></div>';console.error(err);});
+fetch('data/v0.json').then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).then(d=>{DATA=d;const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();currentEvolutionId=DATA.digimon.slice().sort((a,b)=>a.dex_no-b.dex_no)[0]?.id||'';render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML='<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/v0.json 已一併上傳。</span></div>';console.error(err);});
 $$('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
 $('#searchInput').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();});
 $('#clearSearch').onclick=()=>{$('#searchInput').value='';query='';render();$('#searchInput').focus();};
