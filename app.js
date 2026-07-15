@@ -165,48 +165,73 @@ function drawTreeLines(){
   const board=$('#dexTreeBoard'),svg=$('#dexTreeLines');if(!board||!svg)return;
   const br=board.getBoundingClientRect();
   svg.setAttribute('viewBox',`0 0 ${br.width} ${br.height}`);svg.innerHTML='';
+
   const grouped=new Map();
   for(const evo of DATA.evolutions){
     const from=byName(evo.from),to=byName(evo.to);if(!from||!to||from.id===to.id)continue;
     if(!grouped.has(to.id))grouped.set(to.id,{to,items:[]});
     grouped.get(to.id).items.push({from,to,evo});
   }
+
+  const labelLayer=svgEl('g',{'class':'evo-label-layer'});
   let groupIndex=0;
   for(const group of grouped.values()){
     const targetNode=board.querySelector(`[data-id="${group.to.id}"]`);if(!targetNode)continue;
-    const targetRect=targetNode.getBoundingClientRect();
-    const tx=targetRect.left-br.left,ty=targetRect.top+targetRect.height/2-br.top;
+    const tr=targetNode.getBoundingClientRect();
+    const tx=tr.left-br.left;
+    const targetCenterY=tr.top+tr.height/2-br.top;
+
     const valid=group.items.map(item=>{
       const node=board.querySelector(`[data-id="${item.from.id}"]`);if(!node)return null;
       const r=node.getBoundingClientRect();
-      return {...item,node,x:r.right-br.left,y:r.top+r.height/2-br.top};
-    }).filter(Boolean);
+      return {...item,x:r.right-br.left,y:r.top+r.height/2-br.top};
+    }).filter(Boolean).sort((a,b)=>a.y-b.y);
     if(!valid.length)continue;
+
     const color=targetColor(group.to.id,groupIndex++);
+    const n=valid.length;
+    const slotGap=Math.min(12,Math.max(5,42/Math.max(1,n-1)));
+    const slotStart=targetCenterY-((n-1)*slotGap)/2;
+    const mergeX=tx-16;
     const maxSourceX=Math.max(...valid.map(v=>v.x));
-    const gap=Math.max(28,(tx-maxSourceX)*.42);
-    const trunkX=Math.min(tx-18,maxSourceX+gap);
-    const ys=valid.map(v=>v.y).sort((a,b)=>a-b);
-    const minY=Math.min(ty,ys[0]),maxY=Math.max(ty,ys[ys.length-1]);
-    const trunk=svgEl('path',{d:`M ${trunkX} ${minY} L ${trunkX} ${maxY}`,'class':'evo-trunk'});
-    trunk.style.setProperty('--edge-color',color);svg.appendChild(trunk);
-    for(const item of valid){
-      const branch=svgEl('path',{d:`M ${item.x} ${item.y} H ${trunkX}`,'class':'evo-branch'});
-      branch.style.setProperty('--edge-color',color);branch.dataset.from=item.from.id;branch.dataset.to=group.to.id;svg.appendChild(branch);
+    const available=Math.max(48,mergeX-maxSourceX);
+    const baseLaneX=maxSourceX+Math.max(24,available*.42);
+
+    valid.forEach((item,i)=>{
+      const slotY=slotStart+i*slotGap;
+      // 每個來源保留自己的引導線，到目標前才靠攏，避免提早合成一條線而看不出來源。
+      const laneOffset=(i-(n-1)/2)*5;
+      const laneX=Math.min(mergeX-24,baseLaneX+laneOffset);
+      const d=`M ${item.x} ${item.y} H ${laneX} V ${slotY} H ${mergeX}`;
+      const path=svgEl('path',{d,'class':'evo-route'});
+      path.style.setProperty('--edge-color',color);
+      path.dataset.from=item.from.id;path.dataset.to=group.to.id;
+      svg.appendChild(path);
+
       const label=jogressAttributeLabel(item.evo);
       if(label){
-        const lx=item.x+(trunkX-item.x)*.62,ly=item.y;
-        const width=Math.max(26,label.length*8+12);
+        // 屬性放在進化後數碼獸附近的最後一段，並集中到最上層，避免被其他線蓋住。
+        const width=Math.max(28,label.length*9+14);
+        const lx=Math.max(laneX+width/2+4,mergeX-width/2-6);
+        const ly=slotY;
         const g=svgEl('g',{'class':'evo-line-label'});
-        const rect=svgEl('rect',{x:lx-width/2,y:ly-10,width,height:20,rx:3,ry:3});
+        const rect=svgEl('rect',{x:lx-width/2,y:ly-11,width,height:22,rx:4,ry:4});
         rect.style.setProperty('--edge-color',color);
         const text=svgEl('text',{x:lx,y:ly+4,'text-anchor':'middle'});text.textContent=label;
-        g.append(rect,text);svg.appendChild(g);
+        g.append(rect,text);labelLayer.appendChild(g);
       }
-    }
-    const final=svgEl('path',{d:`M ${trunkX} ${ty} H ${tx}`,'class':'evo-final'});
-    final.style.setProperty('--edge-color',color);final.dataset.to=group.to.id;svg.appendChild(final);
+    });
+
+    // 目標前保留多條短引導線，最後才接入同一節點；同一目標仍維持同一顏色。
+    valid.forEach((item,i)=>{
+      const slotY=slotStart+i*slotGap;
+      const final=svgEl('path',{d:`M ${mergeX} ${slotY} H ${tx}`,'class':'evo-target-guide'});
+      final.style.setProperty('--edge-color',color);
+      final.dataset.from=item.from.id;final.dataset.to=group.to.id;
+      svg.appendChild(final);
+    });
   }
+  svg.appendChild(labelLayer);
 }
 function applyTreeSelection(id){
   treeSelectedId=id||'';const d=DATA.digimon.find(x=>x.id===treeSelectedId);const relation=d?treeRelations(d.id):null;

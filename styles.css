@@ -37,3 +37,24 @@
 .dex-tree-lines .evo-line-label text{font-size:11px;font-weight:800;fill:#111;paint-order:stroke;stroke:#fff;stroke-width:2px;stroke-linejoin:round}
 .dex-map-shell.wireless .evo-line-label{display:none}
 @media(max-width:900px){.dex-tree-lines .evo-line-label text{font-size:9px}.dex-tree-lines .evo-line-label rect{stroke-width:2}}
+
+
+/* v0.15 late-merge routing: keep each source line visible until the target */
+.dex-tree-lines .evo-route,.dex-tree-lines .evo-target-guide{
+  fill:none;stroke:var(--edge-color,#777);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+  opacity:.94;filter:drop-shadow(0 0 1px rgba(255,255,255,.96));vector-effect:non-scaling-stroke
+}
+.dex-tree-lines .evo-target-guide{stroke-width:3.4}
+.dex-tree-lines .evo-label-layer{pointer-events:none}
+.dex-tree-lines .evo-line-label rect{
+  fill:#fff;fill-opacity:.97;stroke:var(--edge-color,#777);stroke-width:3;
+  filter:drop-shadow(2px 2px 2px rgba(0,0,0,.4))
+}
+.dex-tree-lines .evo-line-label text{
+  font-size:11px;font-weight:900;fill:#111;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round
+}
+@media(max-width:900px){
+  .dex-tree-lines .evo-route,.dex-tree-lines .evo-target-guide{stroke-width:2.4}
+  .dex-tree-lines .evo-line-label text{font-size:9px}
+  .dex-tree-lines .evo-line-label rect{stroke-width:2}
+}
