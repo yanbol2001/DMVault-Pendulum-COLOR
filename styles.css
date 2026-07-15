@@ -63,3 +63,22 @@
 .dex-tree-lines .evo-route,.dex-tree-lines .evo-target-guide{stroke-width:3;vector-effect:non-scaling-stroke}
 .dex-tree-lines .evo-line-label rect{stroke-width:3.2}
 .dex-tree-lines .evo-line-label text{font-size:11px}
+
+
+/* v0.17 interactive skill-tree prototype */
+.dex-map-canvas{position:relative;min-width:100%;min-height:100%}
+.dex-map-board{transform-origin:0 0;will-change:transform}
+.dex-map-viewport{cursor:grab;overscroll-behavior:contain;touch-action:none;overflow:auto}
+.dex-map-viewport.dragging{cursor:grabbing;user-select:none}
+.tree-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+.tree-actions button{padding:5px 9px;min-width:34px}
+.tree-actions output{min-width:48px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.dex-tree-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dex-tree-toolbar .dex-tree-hint{width:100%;margin-left:0;color:#555}
+.dex-map-node.hovered{outline:5px solid #ff9f0a;outline-offset:3px;z-index:10}
+.dex-tree-lines [data-from][data-to]{transition:opacity .13s,filter .13s,stroke-width .13s}
+.dex-tree-lines [data-from][data-to].active{opacity:1!important;stroke-width:5!important;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px var(--edge-color,#135adb))}
+.dex-tree-lines [data-from][data-to].dimmed{opacity:.07!important;filter:none!important}
+.dex-tree-lines .evo-line-label.active rect{filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 4px var(--edge-color,#135adb))}
+.dex-tree-lines .evo-line-label.dimmed{opacity:.08}
+@media(max-width:760px){.tree-actions{margin-left:0}.dex-tree-toolbar .dex-tree-hint{font-size:11px}.dex-map-viewport{touch-action:pan-x pan-y}.dex-map-canvas{min-width:720px}}
