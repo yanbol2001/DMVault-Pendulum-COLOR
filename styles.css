@@ -39,7 +39,7 @@
 @media(max-width:900px){.dex-tree-lines .evo-line-label text{font-size:9px}.dex-tree-lines .evo-line-label rect{stroke-width:2}}
 
 
-/* v0.15 late-merge routing: keep each source line visible until the target */
+/* v0.16 spaced routing: keep labels and parallel lines separated until the target */
 .dex-tree-lines .evo-route,.dex-tree-lines .evo-target-guide{
   fill:none;stroke:var(--edge-color,#777);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
   opacity:.94;filter:drop-shadow(0 0 1px rgba(255,255,255,.96));vector-effect:non-scaling-stroke
@@ -58,3 +58,8 @@
   .dex-tree-lines .evo-line-label text{font-size:9px}
   .dex-tree-lines .evo-line-label rect{stroke-width:2}
 }
+
+/* v0.16: clearer separation between parallel routes and labels */
+.dex-tree-lines .evo-route,.dex-tree-lines .evo-target-guide{stroke-width:3;vector-effect:non-scaling-stroke}
+.dex-tree-lines .evo-line-label rect{stroke-width:3.2}
+.dex-tree-lines .evo-line-label text{font-size:11px}

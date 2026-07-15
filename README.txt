@@ -1,6 +1,8 @@
-DMVault Pendulum COLOR V0 v0.15 Late-Merge Routes
+DMVault Pendulum COLOR V0 v0.16 Spaced Route Labels
 
-- 屬性標籤移到進化後數碼獸附近
-- 多個來源保留各自引導線，到目標前才合流
-- 同一目標的線維持同一顏色
-- 標籤置於最上層，避免被其他進化線蓋住
+更新內容：
+- 多條進化線在目標前固定保持 30px 垂直間距。
+- Va / Da / Vi / Fr 標籤各自佔一條線，不再上下重疊。
+- 標籤固定靠近進化後數碼獸。
+- 各來源保留獨立引導線，進入目標前才彎向中心。
+- 其他頁面與資料維持 v0.15。

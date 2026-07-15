@@ -190,18 +190,22 @@ function drawTreeLines(){
 
     const color=targetColor(group.to.id,groupIndex++);
     const n=valid.length;
-    const slotGap=Math.min(12,Math.max(5,42/Math.max(1,n-1)));
+
+    // v0.16：每條引導線至少相隔 30px，避免 Va / Da / Vi 標籤上下重疊。
+    // 單一路線仍置中；多路線則在目標前垂直展開，最後才匯入目標。
+    const slotGap=n>1?30:0;
     const slotStart=targetCenterY-((n-1)*slotGap)/2;
-    const mergeX=tx-16;
+    const mergeX=tx-14;
+    const labelX=tx-62;
     const maxSourceX=Math.max(...valid.map(v=>v.x));
-    const available=Math.max(48,mergeX-maxSourceX);
-    const baseLaneX=maxSourceX+Math.max(24,available*.42);
+    const available=Math.max(72,labelX-maxSourceX);
+    const baseLaneX=maxSourceX+Math.max(30,available*.46);
 
     valid.forEach((item,i)=>{
       const slotY=slotStart+i*slotGap;
-      // 每個來源保留自己的引導線，到目標前才靠攏，避免提早合成一條線而看不出來源。
-      const laneOffset=(i-(n-1)/2)*5;
-      const laneX=Math.min(mergeX-24,baseLaneX+laneOffset);
+      // 各來源先走獨立車道，再進入靠近目標的平行區；不在標籤前合流。
+      const laneOffset=(i-(n-1)/2)*7;
+      const laneX=Math.min(labelX-46,baseLaneX+laneOffset);
       const d=`M ${item.x} ${item.y} H ${laneX} V ${slotY} H ${mergeX}`;
       const path=svgEl('path',{d,'class':'evo-route'});
       path.style.setProperty('--edge-color',color);
@@ -210,22 +214,25 @@ function drawTreeLines(){
 
       const label=jogressAttributeLabel(item.evo);
       if(label){
-        // 屬性放在進化後數碼獸附近的最後一段，並集中到最上層，避免被其他線蓋住。
-        const width=Math.max(28,label.length*9+14);
-        const lx=Math.max(laneX+width/2+4,mergeX-width/2-6);
+        const width=Math.max(30,label.length*9+16);
+        const lx=labelX;
         const ly=slotY;
         const g=svgEl('g',{'class':'evo-line-label'});
-        const rect=svgEl('rect',{x:lx-width/2,y:ly-11,width,height:22,rx:4,ry:4});
+        const rect=svgEl('rect',{x:lx-width/2,y:ly-12,width,height:24,rx:5,ry:5});
         rect.style.setProperty('--edge-color',color);
         const text=svgEl('text',{x:lx,y:ly+4,'text-anchor':'middle'});text.textContent=label;
         g.append(rect,text);labelLayer.appendChild(g);
       }
     });
 
-    // 目標前保留多條短引導線，最後才接入同一節點；同一目標仍維持同一顏色。
+    // 每條短引導線維持自己的高度，進入目標前才各自彎向中心。
     valid.forEach((item,i)=>{
       const slotY=slotStart+i*slotGap;
-      const final=svgEl('path',{d:`M ${mergeX} ${slotY} H ${tx}`,'class':'evo-target-guide'});
+      const bendX=tx-8;
+      const finalD=slotY===targetCenterY
+        ?`M ${mergeX} ${slotY} H ${tx}`
+        :`M ${mergeX} ${slotY} H ${bendX} Q ${tx} ${slotY} ${tx} ${targetCenterY}`;
+      const final=svgEl('path',{d:finalD,'class':'evo-target-guide'});
       final.style.setProperty('--edge-color',color);
       final.dataset.from=item.from.id;final.dataset.to=group.to.id;
       svg.appendChild(final);
