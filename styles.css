@@ -201,3 +201,20 @@
   .route-head{position:relative;top:auto}
   .route-timer,.route-column-jogress::after{height:54px;min-height:54px}
 }
+
+/* v0.25 hotfix: keep each target image/title attached to its own condition card.
+   Per-card sticky headers caused target images to detach and overlap Jogress artwork. */
+.route-head{
+  position:relative !important;
+  top:auto !important;
+  z-index:1 !important;
+  flex:0 0 114px;
+}
+.route-column-jogress .route-head{order:0}
+.route-column-jogress .jogress-condition{order:1}
+.route-column-jogress .route-note{order:2}
+.route-column-jogress::after{order:3}
+.route-column{isolation:isolate}
+@media(max-width:760px){
+  .route-head{flex-basis:94px}
+}
