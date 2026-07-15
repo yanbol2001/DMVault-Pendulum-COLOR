@@ -9,3 +9,6 @@ DMVault Pendulum COLOR V0 v0.16 Spaced Route Labels
 
 
 v0.18：圖鑑畫布內任何位置皆可按住滑鼠左鍵拖動；拖曳超過 5px 時不觸發節點點選。
+
+
+v0.34：加入 V1 自然靈魂完整進化條件，共 85 組。
