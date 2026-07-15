@@ -137,27 +137,75 @@ function conditionSummary(e){
   const notes=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
   return [...rows,...notes].join('｜')||'進化';
 }
+function jogressAttributeLabel(e){
+  const notes=String(e.notes||'');
+  if(!/(成熟期的|完全體的|究極體的|超究極體的)/.test(notes))return '';
+  const labels=[];
+  if(notes.includes('疫苗種'))labels.push('Va');
+  if(notes.includes('資料種'))labels.push('Da');
+  if(notes.includes('病毒種'))labels.push('Vi');
+  if(notes.includes('自由種'))labels.push('Fr');
+  return [...new Set(labels)].join('/');
+}
 function linePath(x1,y1,x2,y2){
   const dx=Math.max(28,Math.abs(x2-x1)*.38);
   return `M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`;
+}
+function svgEl(name,attrs={}){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',name);
+  for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));
+  return el;
+}
+function targetColor(targetId,index){
+  let hash=0;for(const ch of targetId)hash=((hash<<5)-hash)+ch.charCodeAt(0)|0;
+  const hue=(Math.abs(hash)+index*37)%360;
+  return `hsl(${hue} 78% 43%)`;
 }
 function drawTreeLines(){
   const board=$('#dexTreeBoard'),svg=$('#dexTreeLines');if(!board||!svg)return;
   const br=board.getBoundingClientRect();
   svg.setAttribute('viewBox',`0 0 ${br.width} ${br.height}`);svg.innerHTML='';
-  const relation=treeSelectedId?treeRelations(treeSelectedId):null;
-  const edges=uniqueTreeEdges();
-  for(const [index,edge] of edges.entries()){
-    const a=board.querySelector(`[data-id="${edge.from}"]`),b=board.querySelector(`[data-id="${edge.to}"]`);if(!a||!b)continue;
-    const ar=a.getBoundingClientRect(),bb=b.getBoundingClientRect();
-    const x1=ar.right-br.left,y1=ar.top+ar.height/2-br.top,x2=bb.left-br.left,y2=bb.top+bb.height/2-br.top;
-    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    const hue=Math.round((index*137.508)%360);
-    path.setAttribute('d',linePath(x1,y1,x2,y2));
-    path.style.setProperty('--edge-color',`hsl(${hue} 78% 43%)`);
-    path.dataset.from=edge.from;path.dataset.to=edge.to;path.dataset.edge=String(index+1);
-    if(relation){const active=relation.related.has(edge.from)&&relation.related.has(edge.to);path.classList.add(active?'active':'dimmed');}
-    svg.appendChild(path);
+  const grouped=new Map();
+  for(const evo of DATA.evolutions){
+    const from=byName(evo.from),to=byName(evo.to);if(!from||!to||from.id===to.id)continue;
+    if(!grouped.has(to.id))grouped.set(to.id,{to,items:[]});
+    grouped.get(to.id).items.push({from,to,evo});
+  }
+  let groupIndex=0;
+  for(const group of grouped.values()){
+    const targetNode=board.querySelector(`[data-id="${group.to.id}"]`);if(!targetNode)continue;
+    const targetRect=targetNode.getBoundingClientRect();
+    const tx=targetRect.left-br.left,ty=targetRect.top+targetRect.height/2-br.top;
+    const valid=group.items.map(item=>{
+      const node=board.querySelector(`[data-id="${item.from.id}"]`);if(!node)return null;
+      const r=node.getBoundingClientRect();
+      return {...item,node,x:r.right-br.left,y:r.top+r.height/2-br.top};
+    }).filter(Boolean);
+    if(!valid.length)continue;
+    const color=targetColor(group.to.id,groupIndex++);
+    const maxSourceX=Math.max(...valid.map(v=>v.x));
+    const gap=Math.max(28,(tx-maxSourceX)*.42);
+    const trunkX=Math.min(tx-18,maxSourceX+gap);
+    const ys=valid.map(v=>v.y).sort((a,b)=>a-b);
+    const minY=Math.min(ty,ys[0]),maxY=Math.max(ty,ys[ys.length-1]);
+    const trunk=svgEl('path',{d:`M ${trunkX} ${minY} L ${trunkX} ${maxY}`,'class':'evo-trunk'});
+    trunk.style.setProperty('--edge-color',color);svg.appendChild(trunk);
+    for(const item of valid){
+      const branch=svgEl('path',{d:`M ${item.x} ${item.y} H ${trunkX}`,'class':'evo-branch'});
+      branch.style.setProperty('--edge-color',color);branch.dataset.from=item.from.id;branch.dataset.to=group.to.id;svg.appendChild(branch);
+      const label=jogressAttributeLabel(item.evo);
+      if(label){
+        const lx=item.x+(trunkX-item.x)*.62,ly=item.y;
+        const width=Math.max(26,label.length*8+12);
+        const g=svgEl('g',{'class':'evo-line-label'});
+        const rect=svgEl('rect',{x:lx-width/2,y:ly-10,width,height:20,rx:3,ry:3});
+        rect.style.setProperty('--edge-color',color);
+        const text=svgEl('text',{x:lx,y:ly+4,'text-anchor':'middle'});text.textContent=label;
+        g.append(rect,text);svg.appendChild(g);
+      }
+    }
+    const final=svgEl('path',{d:`M ${trunkX} ${ty} H ${tx}`,'class':'evo-final'});
+    final.style.setProperty('--edge-color',color);final.dataset.to=group.to.id;svg.appendChild(final);
   }
 }
 function applyTreeSelection(id){

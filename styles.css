@@ -30,3 +30,10 @@
 .dex-map-shell.wireless .dex-tree-lines{display:none}.dex-map-shell.wireless .dex-map-board{height:900px}.dex-map-shell.wireless .dex-map-node{--node-size:78px}
 @media(max-width:900px){.dex-map-board{min-width:0;height:840px}.dex-map-node{--node-size:58px}.dex-map-node img{width:46px;height:46px}.dex-condition{max-width:92px;min-width:58px;font-size:8px;padding:2px}.dex-stage-label{font-size:10px;padding:3px 5px}.dex-map-shell.wireless .dex-map-board{height:760px}.dex-map-shell.wireless .dex-map-node{--node-size:64px}}
 @media(max-width:760px){.dex-map-shell .dex-tree-toolbar{position:relative}.dex-map-viewport{overflow:auto}.dex-map-board{min-width:720px;height:900px}.dex-map-shell.wireless .dex-map-board{height:820px}.dex-map-node{--node-size:58px}.dex-tree-hint{display:none}}
+/* v0.14 merged destination routes + inline Jogress attributes */
+.dex-tree-lines .evo-trunk,.dex-tree-lines .evo-branch,.dex-tree-lines .evo-final{fill:none;stroke:var(--edge-color,#777);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.92;filter:drop-shadow(0 0 1px rgba(255,255,255,.95))}
+.dex-tree-lines .evo-final{stroke-width:4}
+.dex-tree-lines .evo-line-label rect{fill:#fff;stroke:var(--edge-color,#777);stroke-width:3;filter:drop-shadow(2px 2px 2px rgba(0,0,0,.35))}
+.dex-tree-lines .evo-line-label text{font-size:11px;font-weight:800;fill:#111;paint-order:stroke;stroke:#fff;stroke-width:2px;stroke-linejoin:round}
+.dex-map-shell.wireless .evo-line-label{display:none}
+@media(max-width:900px){.dex-tree-lines .evo-line-label text{font-size:9px}.dex-tree-lines .evo-line-label rect{stroke-width:2}}
