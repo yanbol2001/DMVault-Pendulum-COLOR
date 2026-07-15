@@ -441,3 +441,24 @@
   .route-note,.route-column-jogress .route-note{flex-basis:68px!important;height:68px!important;min-height:68px!important}
   .route-timer,.route-column-jogress::after{flex-basis:62px!important;height:62px!important;min-height:62px!important}
 }
+
+
+/* v0.36: complete special-evolution conditions; keep all cards uniform */
+.jogress-condition img{
+  width:auto!important;
+  height:auto!important;
+  max-width:62%!important;
+  max-height:72px!important;
+  object-fit:contain!important;
+}
+.route-column-jogress .route-note{
+  display:grid!important;
+  align-content:stretch!important;
+}
+.route-column-jogress .jogress-note-row:first-child{
+  color:#04f;
+  font-weight:700!important;
+}
+@media(max-width:760px){
+  .jogress-condition img{max-width:58%!important;max-height:64px!important}
+}
