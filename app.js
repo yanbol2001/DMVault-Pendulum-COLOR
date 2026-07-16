@@ -157,6 +157,9 @@ function routeColumn(e,options={}){
     inferredBackupPartner=mate?.from||fixedBackupPairs[`${e.from}>${e.to}`]||'';
     if(inferredBackupPartner)noteParts=[inferredBackupPartner,'可使用備份檔與自己合體'];
   }
+  const originalNoteText=noteParts.join(' ');
+  const isBugNote=/耗盡照顧愛心.*照顧失誤/s.test(originalNoteText);
+  if(isBugNote)noteParts=['＊有 BUG'];
   const noteText=noteParts.join(' ');
   const isJogress=!hasNormalRequirements&&noteParts.length>0;
   const stagePart=noteParts.find(x=>/(幼年期|成長期|成熟期|完全體|究極體|超究極體)/.test(x));
@@ -198,7 +201,7 @@ function routeColumn(e,options={}){
     const cls=part==='不限指定數碼獸'?' jogress-generic-note':part==='可使用備份檔與自己合體'?' jogress-backup-note':'';
     return `<div class="jogress-note-row${cls}">${esc(part)}</div>`;
   }).join('');
-  const noteClass=[/解鎖圖鑑\d+\s*前/.test(noteText)?'unlock-before':/解鎖圖鑑\d+\s*後/.test(noteText)?'unlock-after':noteParts.length?'jogress-note':'',options.suppressNote?'shared-source-note':''].filter(Boolean).join(' ');
+  const noteClass=[isBugNote?'bug-note':/解鎖圖鑑\d+\s*前/.test(noteText)?'unlock-before':/解鎖圖鑑\d+\s*後/.test(noteText)?'unlock-after':noteParts.length?'jogress-note':'',options.suppressNote?'shared-source-note':''].filter(Boolean).join(' ');
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}

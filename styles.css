@@ -706,27 +706,32 @@
 }
 
 
-/* v0.52: V4 unlock colors and full-width bug notice */
+/* v0.53: V4 unlock colors and BUG note layout */
 .route-note.unlock-before,
 .route-note.unlock-before .jogress-note-row{color:#064ee8!important;font-weight:800!important}
 .route-note.unlock-after,
 .route-note.unlock-after .jogress-note-row{color:#d40000!important;font-weight:800!important}
+.route-note.bug-note{
+  color:#e60023!important;
+  font-weight:900!important;
+  letter-spacing:.02em;
+}
 .shared-route-note{
   grid-column:1 / -1;
   width:100%;
   min-height:30px;
-  padding:4px 9px;
+  padding:6px 10px;
   display:flex;
   align-items:center;
-  justify-content:center;
-  text-align:center;
-  color:#fff;
-  background:#8a8a8a;
-  border-top:1px solid #666;
+  justify-content:flex-start;
+  text-align:left;
+  color:#e60023;
+  background:#fff1f3;
+  border-top:2px solid #e60023;
   font-size:13px;
-  font-weight:800;
-  line-height:1.35;
+  font-weight:900;
+  line-height:1.4;
 }
 @media(max-width:760px){
-  .shared-route-note{font-size:12px;padding:5px 7px}
+  .shared-route-note{font-size:12px;padding:6px 8px}
 }
