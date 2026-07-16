@@ -698,3 +698,9 @@
   .unlock-notice{align-items:center!important;margin:7px 0 12px!important;padding:7px 9px!important;gap:3px!important;flex-wrap:wrap!important}
   .unlock-notice strong,.unlock-notice span{font-size:13px!important}
 }
+
+/* v0.45: keep the reserved note row even when empty so every cultivation button aligns */
+.route-bottom-normal .route-note:empty{
+  display:flex!important;
+  visibility:hidden!important;
+}
