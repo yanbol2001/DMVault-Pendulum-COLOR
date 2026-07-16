@@ -228,10 +228,8 @@ function renderStageNav(){
   $$('#stageNav button').forEach(b=>b.onclick=()=>document.getElementById(`stage-${b.dataset.stage}`)?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
 function renderEvolution(){
-  let html=`<aside class="unlock-notice" role="note" aria-label="圖鑑6第二路線解鎖方式">
-    <span class="unlock-notice-icon" aria-hidden="true">🔓</span>
-    <div><strong>圖鑑6 第二路線解鎖方式</strong><p>與不同版本的 Pendulum COLOR 對戰一次，即可解鎖圖鑑6之後的第二條進化路線。</p></div>
-  </aside>`;
+  const unlockNotice=`<aside class="unlock-notice" role="note" aria-label="圖鑑6解鎖方式"><strong>圖鑑6解鎖方式：</strong><span>與其他不同版本的彩色超代(Pendulum COLOR)對戰一次。</span></aside>`;
+  let html='',unlockNoticeInserted=false;
   for(const stage of stageOrder){
     const list=DATA.digimon.filter(d=>d.stage===stage&&matches(d)); if(!list.length)continue;
     html+=`<section class="stage-section" id="stage-${stage}"><h2 class="stage-heading"><span>${stage}</span><small>${list.length} 隻</small></h2>`;
@@ -243,7 +241,12 @@ function renderEvolution(){
       </article>`;
     }
     html+='</section>';
+    if(stage==='幼年期2'){
+      html+=unlockNotice;
+      unlockNoticeInserted=true;
+    }
   }
+  if(html&&!unlockNoticeInserted)html=unlockNotice+html;
   $('#evolutionView').innerHTML=html||'<div class="empty">找不到符合項目</div>';
   $$('.route-link').forEach(b=>b.onclick=()=>jumpToDigimon(b.dataset.target));
   $$('[data-share]').forEach(b=>b.onclick=()=>{const d=DATA.digimon.find(x=>x.id===b.dataset.share);if(d)shareDigimon(d);});
