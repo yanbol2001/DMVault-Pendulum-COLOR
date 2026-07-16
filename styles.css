@@ -1091,3 +1091,48 @@ html[class*="pc-theme-v"] .search-box{border-color:color-mix(in srgb,var(--pc-fr
 html[class*="pc-theme-v"] .search-box button{background:var(--pc-card-2);color:var(--pc-frame-dark)}
 html[class*="pc-theme-v"] footer{color:color-mix(in srgb,var(--pc-ink) 80%,#666)}
 @media(max-width:760px){html[class*="pc-theme-v"] .evolution-sheet{padding:8px;border-radius:12px}html[class*="pc-theme-v"] .sheet-row{display:block}html[class*="pc-theme-v"] .source-panel{width:100%;margin-bottom:10px;border-bottom:1px solid var(--pc-frame-dark)}html[class*="pc-theme-v"] .route-area{gap:8px}html[class*="pc-theme-v"] .route-note{height:52px;min-height:52px}}
+
+/* v0.63: desktop route cards keep a readable minimum width.
+   When the window is narrower, scroll the evolution row horizontally
+   instead of squeezing values and buttons into vertical text. */
+@media (min-width:761px){
+  html[class*="pc-theme-v"] .evolution-sheet{
+    overflow:hidden;
+  }
+  html[class*="pc-theme-v"] .sheet-scroll{
+    overflow-x:auto!important;
+    overflow-y:visible!important;
+    overscroll-behavior-x:contain;
+    scrollbar-gutter:stable;
+    padding-bottom:6px;
+  }
+  html[class*="pc-theme-v"] .sheet-row{
+    width:max-content;
+    min-width:100%;
+  }
+  html[class*="pc-theme-v"] .source-panel{
+    position:sticky;
+    left:0;
+    z-index:8;
+  }
+  html[class*="pc-theme-v"] .route-area{
+    flex:1 0 auto;
+    min-width:max-content;
+    grid-template-columns:repeat(var(--route-columns,9),minmax(168px,1fr));
+  }
+  html[class*="pc-theme-v"] .route-column{
+    min-width:168px;
+  }
+  html[class*="pc-theme-v"] .route-label,
+  html[class*="pc-theme-v"] .route-value,
+  html[class*="pc-theme-v"] .route-timer button,
+  html[class*="pc-theme-v"] .sheet-actions button{
+    white-space:nowrap;
+    word-break:keep-all;
+    overflow-wrap:normal;
+  }
+  html[class*="pc-theme-v"] .route-value{
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+}
