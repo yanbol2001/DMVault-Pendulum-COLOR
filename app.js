@@ -97,13 +97,45 @@ function bindEvolutionTimers(){
   },1000);
 }
 function sprite(d,cls=''){return `<span class="sprite ${cls}"><img src="${esc(d.image)}" alt="${esc(d.name_zh)}" loading="lazy" onerror="this.remove();this.parentElement.classList.add('sprite-error');this.parentElement.dataset.no='${padNo(d.dex_no)}'"></span>`;}
-function haystack(d){
-  const incoming=DATA.evolutions.filter(e=>e.to===d.name_zh).map(e=>e.from).join(' ');
-  const outgoing=DATA.evolutions.filter(e=>e.from===d.name_zh).map(e=>e.to).join(' ');
-  return `${d.dex_no} ${padNo(d.dex_no)} ${d.name_zh} ${d.name_jp} ${d.stage} ${d.attribute} ${incoming} ${outgoing}`.toLowerCase();
+function normalizeSearchText(value){
+  return String(value??'')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[＃#no\.\-－_\s]/g,'')
+    .trim();
 }
-function matches(d){return (!query||haystack(d).includes(query))&&(!stageFilter||d.stage===stageFilter)&&(!attributeFilter||d.attribute===attributeFilter);}
-function filteredDigimon(){return DATA.digimon.filter(matches);}
+function searchFields(d){
+  return {
+    zh:normalizeSearchText(d.name_zh),
+    jp:normalizeSearchText(d.name_jp),
+    stage:normalizeSearchText(d.stage),
+    attribute:normalizeSearchText(d.attribute),
+    dex:String(Number(d.dex_no)),
+    dexPadded:padNo(d.dex_no)
+  };
+}
+function normalizedQuery(){return normalizeSearchText(query);}
+function searchScore(d,rawQuery=query){
+  const q=normalizeSearchText(rawQuery);if(!q)return 0;
+  const f=searchFields(d);
+  const numeric=/^\d+$/.test(q)?String(Number(q)):'';
+  if(numeric&&(f.dex===numeric||f.dexPadded===q))return 1000;
+  if(f.zh===q)return 900;
+  if(f.jp===q)return 850;
+  if(f.zh.startsWith(q))return 700;
+  if(f.jp.startsWith(q))return 650;
+  if(f.zh.includes(q))return 500;
+  if(f.jp.includes(q))return 450;
+  if(f.stage===q||f.attribute===q)return 300;
+  if(f.stage.includes(q)||f.attribute.includes(q))return 200;
+  return -1;
+}
+function matches(d){return (!query||searchScore(d)>=0)&&(!stageFilter||d.stage===stageFilter)&&(!attributeFilter||d.attribute===attributeFilter);}
+function filteredDigimon(){
+  const list=DATA.digimon.filter(matches);
+  if(!query)return list;
+  return list.sort((a,b)=>searchScore(b)-searchScore(a)||a.dex_no-b.dex_no);
+}
 function showToast(text){const t=$('#toast');t.textContent=text;t.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove('show'),1800);}
 function canonicalHash(view,id=''){return id?`#digimon=${encodeURIComponent(id)}`:`#view=${view}`;}
 function jumpToDigimon(id,push=true){
@@ -578,9 +610,14 @@ function renderDex(){
 }
 
 function searchSuggestionItems(){
-  const raw=$('#searchInput')?.value.trim().toLowerCase()||'';
+  const raw=$('#searchInput')?.value.trim()||'';
   if(!raw)return [];
-  return DATA.digimon.filter(d=>haystack(d).includes(raw)).slice(0,8);
+  return DATA.digimon
+    .map(d=>({d,score:searchScore(d,raw)}))
+    .filter(x=>x.score>=0)
+    .sort((a,b)=>b.score-a.score||a.d.dex_no-b.d.dex_no)
+    .slice(0,8)
+    .map(x=>x.d);
 }
 function renderSearchSuggestions(){
   const box=$('#searchSuggestions');if(!box||!DATA)return;
