@@ -158,8 +158,12 @@ function routeColumn(e,options={}){
     if(inferredBackupPartner)noteParts=[inferredBackupPartner,'可使用備份檔與自己合體'];
   }
   const originalNoteText=noteParts.join(' ');
-  const isBugNote=/耗盡照顧愛心.*照顧失誤/s.test(originalNoteText);
-  if(isBugNote)noteParts=['＊有 BUG'];
+  const isBugNote=/耗盡照顧愛心.*照顧失誤/s.test(originalNoteText) ||
+    (ACTIVE_VERSION==='v4' && ['花拉獸','蘑菇獸'].includes(e.from) && String(e.care_mistakes||'').trim()==='0');
+  if(isBugNote){
+    noteParts=noteParts.filter(part=>!/耗盡照顧愛心.*照顧失誤/s.test(part));
+    noteParts.unshift('＊有 BUG');
+  }
   const noteText=noteParts.join(' ');
   const isJogress=!hasNormalRequirements&&noteParts.length>0;
   const stagePart=noteParts.find(x=>/(幼年期|成長期|成熟期|完全體|究極體|超究極體)/.test(x));
@@ -198,10 +202,14 @@ function routeColumn(e,options={}){
       const sourceText=source?`<small class="jogress-partner-version">${esc(source.version)} ${esc(source.name)}</small>`:'';
       return `<div class="jogress-note-row jogress-partner-row">${partner?sprite(partner,'jogress-partner-sprite'):''}<span>與「${esc(part.name)}」合體${sourceText}</span></div>`;
     }
-    const cls=part==='不限指定數碼獸'?' jogress-generic-note':part==='可使用備份檔與自己合體'?' jogress-backup-note':'';
+    const cls=part==='不限指定數碼獸'?' jogress-generic-note':
+      part==='可使用備份檔與自己合體'?' jogress-backup-note':
+      part==='＊有 BUG'?' bug-flag':
+      /解鎖圖鑑\d+\s*前/.test(part)?' unlock-before-inline':
+      /解鎖圖鑑\d+\s*後/.test(part)?' unlock-after-inline':'';
     return `<div class="jogress-note-row${cls}">${esc(part)}</div>`;
   }).join('');
-  const noteClass=[isBugNote?'bug-note':/解鎖圖鑑\d+\s*前/.test(noteText)?'unlock-before':/解鎖圖鑑\d+\s*後/.test(noteText)?'unlock-after':noteParts.length?'jogress-note':'',options.suppressNote?'shared-source-note':''].filter(Boolean).join(' ');
+  const noteClass=[noteParts.length?'jogress-note':'',options.suppressNote?'shared-source-note':''].filter(Boolean).join(' ');
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}

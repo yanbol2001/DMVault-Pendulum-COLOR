@@ -735,3 +735,19 @@
 @media(max-width:760px){
   .shared-route-note{font-size:12px;padding:6px 8px}
 }
+
+
+/* v0.54: allow BUG marker and unlock note to coexist in one route card */
+.route-note .bug-flag{
+  color:#e60023!important;
+  font-weight:900!important;
+  letter-spacing:.02em;
+}
+.route-note .unlock-before-inline{
+  color:#064ee8!important;
+  font-weight:800!important;
+}
+.route-note .unlock-after-inline{
+  color:#d40000!important;
+  font-weight:800!important;
+}
