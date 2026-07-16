@@ -902,3 +902,135 @@ html.pc-theme-v1 footer{color:#415268}
 @media(max-width:760px){
   html.pc-theme-v1 .source-panel{border-bottom-color:var(--v1-blue-deep)}
 }
+
+/* v0.60: V1 card-first evolution layout demo */
+html.pc-theme-v1 .evolution-sheet{
+  border:1px solid rgba(8,47,102,.42);
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(235,239,244,.96),rgba(196,204,214,.96));
+  padding:10px;
+  overflow:hidden;
+}
+html.pc-theme-v1 .sheet-scroll{overflow:visible}
+html.pc-theme-v1 .sheet-row{
+  gap:10px;
+  align-items:stretch;
+}
+html.pc-theme-v1 .source-panel{
+  width:310px;
+  flex:0 0 310px;
+  margin:0;
+  border:1px solid #7d8997;
+  border-right:1px solid #7d8997;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(8,47,102,.16),inset 0 1px 0 #fff;
+}
+html.pc-theme-v1 .source-title-zh{
+  min-height:36px;
+  background:linear-gradient(180deg,#f9fbfd,#d8dee6);
+}
+html.pc-theme-v1 .source-title-jp{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+html.pc-theme-v1 .source-body{background:rgba(248,250,252,.72)}
+html.pc-theme-v1 .source-sprite{
+  margin:6px;
+  border:1px solid rgba(13,79,159,.28);
+  border-radius:10px;
+  background:linear-gradient(145deg,#fff,#dfe8f2);
+}
+html.pc-theme-v1 .source-sprite img{filter:drop-shadow(0 3px 2px rgba(8,47,102,.18))}
+html.pc-theme-v1 .route-area{
+  gap:9px;
+  padding:0;
+  background:transparent;
+}
+html.pc-theme-v1 .route-column{
+  border:1px solid #8794a4;
+  border-radius:11px;
+  overflow:hidden;
+  box-shadow:0 3px 10px rgba(8,47,102,.13),inset 0 1px 0 #fff;
+  transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;
+}
+html.pc-theme-v1 .route-column:hover{
+  transform:translateY(-2px);
+  border-color:var(--v1-blue);
+  box-shadow:0 7px 16px rgba(8,47,102,.22),inset 0 1px 0 #fff;
+}
+html.pc-theme-v1 .route-head{
+  border-bottom:1px solid #8c98a5;
+  background:linear-gradient(145deg,#fbfcfd,#dce3eb);
+}
+html.pc-theme-v1 .route-sprite{
+  width:calc(100% - 10px);
+  margin:2px 5px 4px;
+  border-radius:8px;
+  background:radial-gradient(circle at 50% 35%,#fff 0%,#e5edf5 62%,#ccd7e3 100%);
+}
+html.pc-theme-v1 .route-sprite img{filter:drop-shadow(0 3px 2px rgba(8,47,102,.18))}
+html.pc-theme-v1 .route-head strong{
+  width:calc(100% + 10px);
+  margin:0 -5px -5px;
+  border-top:1px solid rgba(255,255,255,.25);
+}
+html.pc-theme-v1 .route-stage{
+  color:#19314e;
+  background:linear-gradient(180deg,#f5f8fb,#d9e0e8);
+  border-top-color:#8290a0;
+}
+html.pc-theme-v1 .route-fields{background:rgba(248,250,252,.82)}
+html.pc-theme-v1 .route-label{
+  color:#344b66;
+  font-weight:800;
+  background:rgba(218,225,233,.64);
+}
+html.pc-theme-v1 .route-value{background:rgba(250,252,254,.80)}
+html.pc-theme-v1 .route-note{
+  margin:5px;
+  height:48px;
+  min-height:48px;
+  border:1px solid rgba(13,79,159,.22);
+  border-radius:8px;
+  background:rgba(232,241,251,.78);
+}
+html.pc-theme-v1 .route-column-jogress{
+  border-color:#6a4d9b;
+  box-shadow:0 3px 10px rgba(83,54,130,.18),inset 0 1px 0 #fff;
+}
+html.pc-theme-v1 .route-column-jogress .route-head strong{
+  background:linear-gradient(180deg,#7956ad,#4e327d);
+}
+html.pc-theme-v1 .route-column-jogress .jogress-condition{
+  margin:5px;
+  width:calc(100% - 10px);
+  border:1px solid rgba(79,50,125,.35);
+  border-radius:8px;
+  overflow:hidden;
+}
+html.pc-theme-v1 .route-timer{
+  margin:5px;
+  border:1px solid #9ba7b4;
+  border-radius:8px;
+}
+html.pc-theme-v1 .route-column-jogress::after{
+  margin:5px;
+  border:1px solid rgba(79,50,125,.18);
+  border-radius:8px;
+  background:rgba(244,240,250,.7);
+}
+html.pc-theme-v1 .sheet-actions{
+  margin-top:8px;
+  border-top:1px solid rgba(8,47,102,.22);
+  padding:8px 0 0;
+}
+@media(max-width:760px){
+  html.pc-theme-v1 .evolution-sheet{padding:8px;border-radius:12px}
+  html.pc-theme-v1 .sheet-row{display:block}
+  html.pc-theme-v1 .source-panel{width:100%;margin-bottom:10px;border-bottom:1px solid #7d8997}
+  html.pc-theme-v1 .route-area{gap:8px}
+  html.pc-theme-v1 .route-note{height:52px;min-height:52px}
+}
