@@ -1,5 +1,5 @@
 const ACTIVE_VERSION=(new URLSearchParams(location.search).get('version')||'v0').toLowerCase();
-const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂'};
+const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂',v2:'V2 深海救星',v3:'V3 噩夢軍團'};
 const stageOrder=['幼年期1','幼年期2','成長期','成熟期','完全體','究極體','超究極體'];
 let DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
 const $=s=>document.querySelector(s);
