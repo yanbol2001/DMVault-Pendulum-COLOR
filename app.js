@@ -140,7 +140,7 @@ function sourceInfoTable(d){
     </div>
   </div>`;
 }
-function routeColumn(e){
+function routeColumn(e,options={}){
   const target=byName(e.to);
   const fields=[['照顧',e.care_mistakes],['努力',e.effort],['戰鬥',e.battles],['勝率',e.win_rate],['時間',e.time]];
   let noteParts=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
@@ -198,7 +198,7 @@ function routeColumn(e){
     const cls=part==='不限指定數碼獸'?' jogress-generic-note':part==='可使用備份檔與自己合體'?' jogress-backup-note':'';
     return `<div class="jogress-note-row${cls}">${esc(part)}</div>`;
   }).join('');
-  const noteClass=/解鎖圖鑑\d+\s*前/.test(noteText)?'unlock-before':/解鎖圖鑑\d+\s*後/.test(noteText)?'unlock-after':noteParts.length?'jogress-note':'';
+  const noteClass=[/解鎖圖鑑\d+\s*前/.test(noteText)?'unlock-before':/解鎖圖鑑\d+\s*後/.test(noteText)?'unlock-after':noteParts.length?'jogress-note':'',options.suppressNote?'shared-source-note':''].filter(Boolean).join(' ');
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}
@@ -244,8 +244,26 @@ function renderStageNav(){
   $('#stageNav').innerHTML=available.map(stage=>`<button data-stage="${stage}">${stage}</button>`).join('');
   $$('#stageNav button').forEach(b=>b.onclick=()=>document.getElementById(`stage-${b.dataset.stage}`)?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
+function specialSharedRouteNote(source,routes){
+  if(ACTIVE_VERSION!=='v4')return null;
+  if(source.name_zh==='花拉獸'){
+    return {start:1,span:2,text:'※ 花拉獸有 BUG：照顧 0 時，需先耗盡照顧愛心，再產生一次照顧失誤，否則可能進化錯誤。',suppress:new Set(['evo-012'])};
+  }
+  if(source.name_zh==='蘑菇獸'){
+    return {start:1,span:3,text:'※ 蘑菇獸有 BUG：照顧 0 時，需先耗盡照顧愛心，再產生一次照顧失誤，否則可能進化錯誤。',suppress:new Set(['evo-018','evo-020'])};
+  }
+  return null;
+}
+function renderRouteArea(source,routes){
+  if(!routes.length)return '<div class="no-route">此階段無後續進化資料</div>';
+  const shared=specialSharedRouteNote(source,routes);
+  const columns=routes.map(e=>routeColumn(e,{suppressNote:shared?.suppress?.has(e.id)})).join('');
+  const sharedMarkup=shared?`<div class="shared-route-note" style="grid-column:${shared.start}/span ${shared.span}">${esc(shared.text)}</div>`:'';
+  return columns+sharedMarkup;
+}
 function renderEvolution(){
-  const unlockNotice=`<aside class="unlock-notice" role="note" aria-label="圖鑑6解鎖方式"><strong>圖鑑6解鎖方式：</strong><span>與其他不同版本的彩色超代(Pendulum COLOR)對戰一次。</span></aside>`;
+  const unlockDex=ACTIVE_VERSION==='v4'?7:6;
+  const unlockNotice=`<aside class="unlock-notice" role="note" aria-label="圖鑑${unlockDex}解鎖方式"><strong>圖鑑${unlockDex}解鎖方式：</strong><span>與其他不同版本的彩色超代(Pendulum COLOR)對戰一次。</span></aside>`;
   let html='',unlockNoticeInserted=false;
   for(const stage of stageOrder){
     const list=DATA.digimon.filter(d=>d.stage===stage&&matches(d)); if(!list.length)continue;
@@ -253,7 +271,7 @@ function renderEvolution(){
     for(const d of list){
       const routes=DATA.evolutions.filter(e=>e.from===d.name_zh);
       html+=`<article class="evolution-sheet" id="evo-${d.id}">
-        <div class="sheet-scroll"><div class="sheet-row">${sourceInfoTable(d)}<div class="route-area">${routes.length?routes.map(routeColumn).join(''):`<div class="no-route">此階段無後續進化資料</div>`}</div></div></div>
+        <div class="sheet-scroll"><div class="sheet-row">${sourceInfoTable(d)}<div class="route-area">${renderRouteArea(d,routes)}</div></div></div>
         <div class="sheet-actions"><button type="button" data-share="${d.id}">分享這隻</button></div>
       </article>`;
     }

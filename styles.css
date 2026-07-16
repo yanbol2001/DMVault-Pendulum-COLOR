@@ -704,3 +704,40 @@
   display:flex!important;
   visibility:hidden!important;
 }
+
+
+/* v0.51: V4 unlock colors and shared bug notice */
+.route-note.unlock-before,
+.route-note.unlock-before .jogress-note-row{color:#064ee8!important;font-weight:800!important}
+.route-note.unlock-after,
+.route-note.unlock-after .jogress-note-row{color:#d40000!important;font-weight:800!important}
+.route-area{position:relative}
+.route-area>.route-column{grid-row:1}
+.route-note.shared-source-note{visibility:hidden!important}
+.shared-route-note{
+  grid-row:1;
+  align-self:end;
+  z-index:4;
+  height:38px;
+  min-height:38px;
+  margin-bottom:56px;
+  padding:3px 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#d40000;
+  background:#fff;
+  border-top:1px solid #bbb;
+  border-left:1px solid #bbb;
+  border-right:1px solid #bbb;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.25;
+  overflow:hidden;
+}
+@media(max-width:760px){
+  .route-area>.route-column{grid-row:auto}
+  .route-note.shared-source-note{visibility:visible!important}
+  .shared-route-note{display:none!important}
+}
