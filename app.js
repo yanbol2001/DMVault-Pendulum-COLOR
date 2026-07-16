@@ -228,7 +228,10 @@ function renderStageNav(){
   $$('#stageNav button').forEach(b=>b.onclick=()=>document.getElementById(`stage-${b.dataset.stage}`)?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
 function renderEvolution(){
-  let html='';
+  let html=`<aside class="unlock-notice" role="note" aria-label="圖鑑6第二路線解鎖方式">
+    <span class="unlock-notice-icon" aria-hidden="true">🔓</span>
+    <div><strong>圖鑑6 第二路線解鎖方式</strong><p>與不同版本的 Pendulum COLOR 對戰一次，即可解鎖圖鑑6之後的第二條進化路線。</p></div>
+  </aside>`;
   for(const stage of stageOrder){
     const list=DATA.digimon.filter(d=>d.stage===stage&&matches(d)); if(!list.length)continue;
     html+=`<section class="stage-section" id="stage-${stage}"><h2 class="stage-heading"><span>${stage}</span><small>${list.length} 隻</small></h2>`;

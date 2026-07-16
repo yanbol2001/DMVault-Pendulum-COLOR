@@ -610,3 +610,27 @@
   .route-head strong{height:34px!important;min-height:34px!important}
   .route-stage{height:20px!important;min-height:20px!important;font-size:11px!important}
 }
+
+
+/* v0.43: shared Dex 6 unlock notice for every Pendulum COLOR version */
+.unlock-notice{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:10px 0 14px;
+  padding:10px 14px;
+  border:2px solid #d93434;
+  border-radius:8px;
+  background:#fff1f1;
+  color:#8d1010;
+  box-shadow:0 2px 0 rgba(141,16,16,.12);
+}
+.unlock-notice-icon{flex:0 0 auto;font-size:24px;line-height:1}
+.unlock-notice strong{display:block;font-size:15px;line-height:1.35}
+.unlock-notice p{margin:2px 0 0;font-size:14px;font-weight:700;line-height:1.45}
+@media(max-width:760px){
+  .unlock-notice{align-items:flex-start;margin:8px 0 12px;padding:9px 11px;gap:9px}
+  .unlock-notice-icon{font-size:21px}
+  .unlock-notice strong{font-size:14px}
+  .unlock-notice p{font-size:13px}
+}
