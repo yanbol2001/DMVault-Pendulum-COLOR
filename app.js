@@ -1,5 +1,5 @@
 const ACTIVE_VERSION=(new URLSearchParams(location.search).get('version')||'v0').toLowerCase();
-const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂',v2:'V2 深海救星',v3:'V3 噩夢軍團'};
+const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂',v2:'V2 深海救星',v3:'V3 噩夢軍團',v4:'V4 風之守衛'};
 const stageOrder=['幼年期1','幼年期2','成長期','成熟期','完全體','究極體','超究極體'];
 let DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
 const $=s=>document.querySelector(s);
@@ -165,7 +165,8 @@ function routeColumn(e){
   const partnerVersionInfo={
     '淑女惡魔獸':{version:'V3',name:'噩夢軍團',image:'images/v3/021.gif'},
     '天女獸':{version:'V0',name:'病毒剋星',image:'images/v0/022.gif'},
-    '鳳凰獸':{version:'V4',name:'風之守衛',image:'images/external/phoenix.gif'},
+    '鳳凰獸':{version:'V4',name:'風之守衛',image:'images/v4/023.gif'},
+    '海天使獸':{version:'V2',name:'深海救星',image:'images/v2/030.gif'},
     '鋼鐵悟空獸':{version:'V1',name:'自然靈魂'},
     '黃金鄉獸':{version:'V1',name:'自然靈魂'},
     '黃金劍獅獸':{version:'V1',name:'自然靈魂'}
@@ -197,7 +198,7 @@ function routeColumn(e){
     const cls=part==='不限指定數碼獸'?' jogress-generic-note':part==='可使用備份檔與自己合體'?' jogress-backup-note':'';
     return `<div class="jogress-note-row${cls}">${esc(part)}</div>`;
   }).join('');
-  const noteClass=noteText.includes('解鎖圖鑑6 前')?'unlock-before':noteText.includes('解鎖圖鑑6 後')?'unlock-after':noteParts.length?'jogress-note':'';
+  const noteClass=/解鎖圖鑑\d+\s*前/.test(noteText)?'unlock-before':/解鎖圖鑑\d+\s*後/.test(noteText)?'unlock-after':noteParts.length?'jogress-note':'';
   return `<div class="route-column ${isJogress?'route-column-jogress':''}">
     <button class="route-head ${target?'route-link':''}" ${target?`data-target="${target.id}"`:''} type="button">
       ${target?sprite(target,'route-sprite'):''}
