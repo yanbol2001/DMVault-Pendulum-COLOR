@@ -152,6 +152,7 @@ function routeColumn(e){
   const partnerParts=noteParts.filter(x=>x!==stagePart&&!attributeParts.includes(x)&&x!=='或');
   const partnerVersionInfo={
     '淑女惡魔獸':{version:'V3',name:'噩夢軍團'},
+    '鳳凰獸':{version:'V4',name:'風之守衛'},
     '鋼鐵悟空獸':{version:'V1',name:'自然靈魂'},
     '黃金鄉獸':{version:'V1',name:'自然靈魂'},
     '黃金劍獅獸':{version:'V1',name:'自然靈魂'}
