@@ -244,21 +244,21 @@ function renderStageNav(){
   $('#stageNav').innerHTML=available.map(stage=>`<button data-stage="${stage}">${stage}</button>`).join('');
   $$('#stageNav button').forEach(b=>b.onclick=()=>document.getElementById(`stage-${b.dataset.stage}`)?.scrollIntoView({behavior:'smooth',block:'start'}));
 }
-function specialSharedRouteNote(source,routes){
+function specialSharedRouteNote(source){
   if(ACTIVE_VERSION!=='v4')return null;
   if(source.name_zh==='花拉獸'){
-    return {start:1,span:2,text:'※ 花拉獸有 BUG：照顧 0 時，需先耗盡照顧愛心，再產生一次照顧失誤，否則可能進化錯誤。',suppress:new Set(['evo-012'])};
+    return '因為花拉獸有 BUG，照顧 0，需要在耗盡照顧愛心後，再產生一次照顧失誤，不然可能會長歪掉。';
   }
   if(source.name_zh==='蘑菇獸'){
-    return {start:1,span:3,text:'※ 蘑菇獸有 BUG：照顧 0 時，需先耗盡照顧愛心，再產生一次照顧失誤，否則可能進化錯誤。',suppress:new Set(['evo-018','evo-020'])};
+    return '因為蘑菇獸有 BUG，照顧 0，需要在耗盡照顧愛心後，再產生一次照顧失誤，不然可能會長歪掉。';
   }
-  return null;
+  return '';
 }
 function renderRouteArea(source,routes){
   if(!routes.length)return '<div class="no-route">此階段無後續進化資料</div>';
-  const shared=specialSharedRouteNote(source,routes);
-  const columns=routes.map(e=>routeColumn(e,{suppressNote:shared?.suppress?.has(e.id)})).join('');
-  const sharedMarkup=shared?`<div class="shared-route-note" style="grid-column:${shared.start}/span ${shared.span}">${esc(shared.text)}</div>`:'';
+  const columns=routes.map(e=>routeColumn(e)).join('');
+  const shared=specialSharedRouteNote(source);
+  const sharedMarkup=shared?`<div class="shared-route-note">${esc(shared)}</div>`:'';
   return columns+sharedMarkup;
 }
 function renderEvolution(){
