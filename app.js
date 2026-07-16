@@ -1,4 +1,5 @@
 const ACTIVE_VERSION=(new URLSearchParams(location.search).get('version')||'v0').toLowerCase();
+if(ACTIVE_VERSION==='v5')document.documentElement.classList.add('pc-card-demo');
 const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂',v2:'V2 深海救星',v3:'V3 噩夢軍團',v4:'V4 風之守衛',v5:'V5 鋼之帝國'};
 const stageOrder=['幼年期1','幼年期2','成長期','成熟期','完全體','究極體','超究極體'];
 let DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';

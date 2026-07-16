@@ -751,3 +751,136 @@
   color:#d40000!important;
   font-weight:800!important;
 }
+
+/* v0.58 visual demo: MH-inspired card treatment, V5 only */
+html.pc-card-demo body{background:#eef1f5}
+html.pc-card-demo .evolution-sheet{
+  background:transparent;
+  border:0;
+  margin:16px 0 34px;
+  overflow:visible;
+}
+html.pc-card-demo .sheet-row{
+  gap:12px;
+  align-items:stretch;
+}
+html.pc-card-demo .source-panel{
+  width:340px;
+  flex:0 0 340px;
+  border:1px solid #c7ccd4;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 5px 16px rgba(25,34,48,.12);
+  background:#fff;
+}
+html.pc-card-demo .source-title-zh{
+  min-height:42px;
+  border-bottom:0;
+  background:linear-gradient(135deg,#f7f9fc,#e9eef5);
+  font-size:19px;
+  padding:7px 10px;
+}
+html.pc-card-demo .source-title-jp{
+  background:linear-gradient(135deg,#161a21,#050608);
+  padding:7px 8px;
+  letter-spacing:.04em;
+}
+html.pc-card-demo .source-body{background:#fff}
+html.pc-card-demo .source-side{border-right:1px solid #d7dbe1}
+html.pc-card-demo .stat-label,
+html.pc-card-demo .stat-value{border-color:#d7dbe1}
+html.pc-card-demo .stat-label{background:#f7f9fb;color:#313844;font-weight:700}
+html.pc-card-demo .source-sprite{background:radial-gradient(circle at center,#fff 0,#f6f8fb 65%,#eef1f5 100%)}
+html.pc-card-demo .source-sprite img{filter:drop-shadow(0 3px 2px rgba(0,0,0,.12))}
+html.pc-card-demo .stage-pill{border:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+html.pc-card-demo .route-area{
+  gap:10px;
+  align-items:stretch;
+}
+html.pc-card-demo .route-column{
+  border:1px solid #c7ccd4;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 13px rgba(25,34,48,.11);
+  background:#fff;
+}
+html.pc-card-demo .route-column:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(25,34,48,.16);
+  transition:.16s ease;
+}
+html.pc-card-demo .route-head{
+  background:linear-gradient(180deg,#fff,#f4f7fa);
+  border-bottom:0;
+  padding:7px 6px 0!important;
+}
+html.pc-card-demo .route-sprite img{filter:drop-shadow(0 3px 2px rgba(0,0,0,.13))}
+html.pc-card-demo .route-head strong{
+  background:linear-gradient(135deg,#171b22,#050608);
+  border-radius:7px 7px 0 0;
+  letter-spacing:.02em;
+}
+html.pc-card-demo .route-stage{
+  background:#eef2f7;
+  border-top:0;
+  color:#394150;
+  font-weight:900;
+}
+html.pc-card-demo .route-fields{background:#fff}
+html.pc-card-demo .route-label,
+html.pc-card-demo .route-value{border-color:#d7dbe1}
+html.pc-card-demo .route-label{
+  background:#f6f8fb;
+  color:#252b35;
+}
+html.pc-card-demo .route-value{background:#fff}
+html.pc-card-demo .route-note{
+  background:#fafbfc;
+  border-top:1px solid #d7dbe1;
+}
+html.pc-card-demo .route-bottom-normal{
+  background:#f5f7fa;
+}
+html.pc-card-demo .route-timer{
+  border-top:1px solid #d7dbe1;
+  background:#f5f7fa;
+  padding:7px!important;
+}
+html.pc-card-demo .route-timer button{
+  border:1px solid #8d96a4;
+  border-radius:7px;
+  background:#fff;
+  box-shadow:0 2px 5px rgba(25,34,48,.08);
+}
+html.pc-card-demo .route-timer button:hover{background:#fff7d7;border-color:#806f2b}
+html.pc-card-demo .route-column-jogress{
+  border-color:#8d69b8;
+  box-shadow:0 4px 14px rgba(111,67,151,.18);
+}
+html.pc-card-demo .route-column-jogress .route-head strong{
+  background:linear-gradient(135deg,#5f2f88,#2b123f);
+}
+html.pc-card-demo .route-note.unlock-before{background:#eef5ff}
+html.pc-card-demo .route-note.unlock-after{background:#fff0f0}
+html.pc-card-demo .route-note.bug-note{background:#fff0f3}
+html.pc-card-demo .raised-toggle{
+  border-color:#d7dbe1;
+  background:#f8fafc;
+}
+html.pc-card-demo .shared-route-note{
+  border:1px solid #e60023;
+  border-radius:8px;
+  box-shadow:0 2px 7px rgba(230,0,35,.12);
+}
+html.pc-card-demo .sheet-actions{
+  margin-top:10px;
+  border:0;
+  padding:0;
+}
+html.pc-card-demo .sheet-actions button{border-radius:7px;box-shadow:0 2px 5px rgba(0,0,0,.08)}
+@media(max-width:760px){
+  html.pc-card-demo .sheet-row{gap:10px}
+  html.pc-card-demo .source-panel{width:100%;flex-basis:auto;border-bottom:1px solid #c7ccd4}
+  html.pc-card-demo .route-area{gap:8px}
+  html.pc-card-demo .route-column{border-radius:10px}
+}
