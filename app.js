@@ -143,16 +143,29 @@ function sourceInfoTable(d){
 function routeColumn(e){
   const target=byName(e.to);
   const fields=[['照顧',e.care_mistakes],['努力',e.effort],['戰鬥',e.battles],['勝率',e.win_rate],['時間',e.time]];
-  const noteParts=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
-  const noteText=noteParts.join(' ');
+  let noteParts=(e.notes||'').split('/').map(x=>x.trim()).filter(x=>x&&!['照顧','努力','戰鬥','勝率','時間'].includes(x));
   const hasNormalRequirements=fields.some(([,v])=>String(v||'').trim()&&String(v).trim()!=='-');
+  // 空白條件但同一目標另有另一個來源時，代表可用備份檔完成的指定合體。
+  let inferredBackupPartner='';
+  if(!hasNormalRequirements&&!noteParts.length){
+    const mate=DATA?.evolutions.find(x=>x!==e&&x.to===e.to&&x.from!==e.from&&
+      !['care_mistakes','effort','battles','win_rate','time','notes'].some(k=>String(x[k]||'').trim()));
+    const fixedBackupPairs={
+      '天女獸>混沌神魔獸':'淑女惡魔獸',
+      '淑女惡魔獸>混沌神魔獸':'天女獸'
+    };
+    inferredBackupPartner=mate?.from||fixedBackupPairs[`${e.from}>${e.to}`]||'';
+    if(inferredBackupPartner)noteParts=[inferredBackupPartner,'可使用備份檔與自己合體'];
+  }
+  const noteText=noteParts.join(' ');
   const isJogress=!hasNormalRequirements&&noteParts.length>0;
   const stagePart=noteParts.find(x=>/(幼年期|成長期|成熟期|完全體|究極體|超究極體)/.test(x));
   const attributeParts=noteParts.filter(x=>/(疫苗種|資料種|病毒種|自由種)/.test(x));
   const partnerParts=noteParts.filter(x=>x!==stagePart&&!attributeParts.includes(x)&&x!=='或');
   const partnerVersionInfo={
-    '淑女惡魔獸':{version:'V3',name:'噩夢軍團'},
-    '鳳凰獸':{version:'V4',name:'風之守衛'},
+    '淑女惡魔獸':{version:'V3',name:'噩夢軍團',image:'images/v3/021.gif'},
+    '天女獸':{version:'V0',name:'病毒剋星',image:'images/v0/022.gif'},
+    '鳳凰獸':{version:'V4',name:'風之守衛',image:'images/external/phoenix.gif'},
     '鋼鐵悟空獸':{version:'V1',name:'自然靈魂'},
     '黃金鄉獸':{version:'V1',name:'自然靈魂'},
     '黃金劍獅獸':{version:'V1',name:'自然靈魂'}
@@ -168,13 +181,16 @@ function routeColumn(e){
       rows.push('不限指定數碼獸');
       if(['鋼鐵悟空獸','黃金鄉獸'].includes(e.from))rows.push('可使用備份檔與自己合體');
     }
-    for(const partner of partnerParts)rows.push({type:'partner',name:partner});
+    for(const partner of partnerParts){
+      if(partner==='可使用備份檔與自己合體')rows.push(partner);
+      else rows.push({type:'partner',name:partner});
+    }
     conditionRows=rows;
   }
   const extra=conditionRows.map(part=>{
     if(part&&typeof part==='object'&&part.type==='partner'){
-      const partner=byName(part.name);
       const source=partnerVersionInfo[part.name];
+      const partner=byName(part.name)||(source?.image?{name_zh:part.name,image:source.image,dex_no:''}:null);
       const sourceText=source?`<small class="jogress-partner-version">${esc(source.version)} ${esc(source.name)}</small>`:'';
       return `<div class="jogress-note-row jogress-partner-row">${partner?sprite(partner,'jogress-partner-sprite'):''}<span>與「${esc(part.name)}」合體${sourceText}</span></div>`;
     }
