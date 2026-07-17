@@ -1263,3 +1263,48 @@ html[class*="pc-theme-v"] footer{color:color-mix(in srgb,var(--pc-ink) 80%,#666)
 .guide-table-note{text-align:left!important;min-width:260px}
 @media(max-width:860px){.guide-layout{grid-template-columns:1fr}.guide-toc{position:static;display:flex;flex-direction:row;overflow-x:auto;white-space:nowrap}.guide-toc>strong{display:none}.guide-toc a{flex:0 0 auto}.guide-hero{padding:22px}.guide-hero-badge{display:none}}
 @media(max-width:600px){.guide-reformatted{padding:0 8px}.guide-hero{padding:19px 17px;border-radius:15px}.guide-section{border-radius:14px}.guide-section-header{padding:16px}.guide-section-body{padding:17px 16px 21px}.guide-section-header p{display:none}.guide-toc{padding:8px;border-radius:12px}.guide-toc a{padding:8px;font-size:.82rem}}
+
+
+/* v0.75 guide theme */
+.guide-container,.guide-nav,.guide-content,.guide-card{
+background:#faf8f2;
+}
+.guide-nav{
+border-right:3px solid #8c6b2f;
+}
+.guide-nav button.active{
+background:#8c6b2f;
+color:#fff;
+}
+.guide-card{
+border:2px solid #c9b27a;
+border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+margin-bottom:16px;
+}
+.guide-card h2{
+margin:0;
+padding:10px 14px;
+background:linear-gradient(#d8c28b,#b89446);
+color:#fff;
+border-radius:10px 10px 0 0;
+font-size:20px;
+}
+.guide-card .content{
+padding:16px;
+line-height:1.8;
+}
+.guide-table{
+width:100%;
+border-collapse:collapse;
+background:#fffdf8;
+}
+.guide-table th{
+background:#b89446;
+color:#fff;
+padding:8px;
+}
+.guide-table td{
+border:1px solid #d8c28b;
+padding:8px 10px;
+}
