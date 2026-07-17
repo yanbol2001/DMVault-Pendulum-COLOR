@@ -639,7 +639,7 @@ function stageAttackPattern(value){
 }
 function renderStages(){
   const box=$('#stagesView');
-  if(ACTIVE_VERSION!=='v0'||!STAGE_DATA){
+  if(!STAGE_DATA){
     box.innerHTML=`<section class="stage-page-empty"><h2>關卡資料</h2><p>${esc(VERSION_LABELS[ACTIVE_VERSION])} 的關卡頁尚未建立。</p></section>`;
     return;
   }
@@ -693,11 +693,11 @@ function populateFilters(){
   const attrs=[...new Set(DATA.digimon.map(d=>d.attribute).filter(Boolean))].sort();$('#attributeFilter').innerHTML='<option value="">全部屬性</option>'+attrs.map(a=>`<option>${esc(a)}</option>`).join('');
 }
 function parseHash(){const p=new URLSearchParams(location.hash.slice(1));return {view:p.get('view'),id:p.get('digimon')};}
-function restoreHash(){const {view,id}=parseHash();if(id&&DATA.digimon.some(d=>d.id===id)){switchView('evolution',false);setTimeout(()=>jumpToDigimon(id,false),80);return;}switchView(['overview','evolution','dex'].includes(view)?view:'overview',false);}
+function restoreHash(){const {view,id}=parseHash();if(id&&DATA.digimon.some(d=>d.id===id)){switchView('evolution',false);setTimeout(()=>jumpToDigimon(id,false),80);return;}switchView(['overview','evolution','dex','stages'].includes(view)?view:'overview',false);}
 const dataRequest=fetch(`data/${ACTIVE_VERSION}.json`).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()});
-const stageRequest=ACTIVE_VERSION==='v0'
-  ?fetch('data/stages-v0.json').then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).catch(err=>{console.warn('V0 關卡資料載入失敗：',err);return null;})
-  :Promise.resolve(null);
+const stageRequest=fetch(`data/stages-${ACTIVE_VERSION}.json`)
+  .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
+  .catch(err=>{console.warn(`${ACTIVE_VERSION.toUpperCase()} 關卡資料載入失敗：`,err);return null;});
 Promise.all([dataRequest,stageRequest]).then(([d,stageData])=>{DATA=d;STAGE_DATA=stageData;document.title=`DMVault｜Pendulum COLOR ${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}`;document.querySelectorAll('.version[data-version]').forEach(b=>{const active=b.dataset.version===ACTIVE_VERSION;b.classList.toggle('active',active);b.toggleAttribute('aria-current',active);});const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML=`<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/${ACTIVE_VERSION}.json 已一併上傳。</span></div>`;console.error(err);});
 $$('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
 $('#searchInput').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();renderSearchSuggestions();});
