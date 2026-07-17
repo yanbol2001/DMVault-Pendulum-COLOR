@@ -2,7 +2,7 @@ const ACTIVE_VERSION=(new URLSearchParams(location.search).get('version')||'v0')
 document.documentElement.classList.add(`pc-theme-${ACTIVE_VERSION}`);
 const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂',v2:'V2 深海救星',v3:'V3 噩夢軍團',v4:'V4 風之守衛',v5:'V5 鋼之帝國'};
 const stageOrder=['幼年期1','幼年期2','成長期','成熟期','完全體','究極體','超究極體'];
-let DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
+let DATA=null, STAGE_DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -633,9 +633,53 @@ function updateSummary(){
   $('#summary').textContent=parts.length?`${parts.join('／')}：${visible} 隻`:`${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}｜${DATA.digimon.length} 隻數碼獸${DATA.evolutions.length?`／${DATA.evolutions.length} 組進化條件`:'／進化條件待加入'}`;
 }
 function render(){renderOverview();renderEvolution();renderDex();updateSummary();renderSearchSuggestions();}
+
+function stageAttackPattern(value){
+  return String(value||'').split('').map((n,i)=>`<span class="attack-step attack-${esc(n)}" title="第 ${i+1} 發：${esc(n)}">${esc(n)}</span>`).join('');
+}
+function renderStages(){
+  const box=$('#stagesView');
+  if(ACTIVE_VERSION!=='v0'||!STAGE_DATA){
+    box.innerHTML=`<section class="stage-page-empty"><h2>關卡資料</h2><p>${esc(VERSION_LABELS[ACTIVE_VERSION])} 的關卡頁尚未建立。</p></section>`;
+    return;
+  }
+  const digimonByNo=new Map(DATA.digimon.map(d=>[Number(d.dex_no),d]));
+  const rounds=STAGE_DATA.rounds.map((round,ri)=>{
+    const cards=round.enemies.map((e,i)=>{
+      const d=digimonByNo.get(Number(e[0]));
+      const attr=e[1],strength=e[2],attack=e[3],status=e[4],background=e[5];
+      return `<article class="stage-enemy-card ${i===9?'stage-boss-card':''}">
+        <div class="stage-number">第 ${i+1} 關${i===9?'<span> BOSS</span>':''}</div>
+        <div class="stage-enemy-visual">${d?sprite(d,'stage-enemy-sprite'):''}</div>
+        <h3>${d?esc(d.name_zh):'資料待確認'}</h3>
+        <div class="stage-enemy-meta"><span class="attr-${esc(attr)}">${esc(attr)}</span><strong>強度 ${esc(strength)}</strong></div>
+        <dl class="stage-details">
+          <div><dt>攻擊發數</dt><dd class="attack-pattern">${stageAttackPattern(attack)}</dd></div>
+          <div><dt>負面狀態</dt><dd>${status==='-'?'<span class="muted">無</span>':esc(status)}</dd></div>
+        </dl>
+        ${background?`<div class="stage-unlock"><span>通關解鎖背景</span><strong>${esc(background)}</strong></div>`:''}
+      </article>`;
+    }).join('');
+    return `<section class="stage-round ${ri===0?'active':''}" data-round-panel="${round.id}">
+      <div class="stage-round-heading"><h2>${esc(round.label)}</h2><span>10 關</span></div>
+      <div class="stage-enemy-grid">${cards}</div>
+    </section>`;
+  }).join('');
+  box.innerHTML=`<section class="stage-page">
+    <div class="stage-page-header"><div><span class="stage-page-kicker">Pendulum COLOR Battle Area</span><h1>${esc(STAGE_DATA.title)}</h1><p>${esc(STAGE_DATA.note)}</p></div>
+      <div class="stage-round-tabs">${STAGE_DATA.rounds.map((r,i)=>`<button type="button" class="${i===0?'active':''}" data-round-tab="${r.id}">${esc(r.label)}</button>`).join('')}</div>
+    </div>${rounds}
+    <aside class="stage-legend"><strong>攻擊發數：</strong><span class="attack-step attack-1">1</span> 普通攻擊　<span class="attack-step attack-2">2</span> 強攻擊 <small>（依攻略原始編碼顯示）</small></aside>
+  </section>`;
+  $$('[data-round-tab]').forEach(btn=>btn.onclick=()=>{
+    $$('[data-round-tab]').forEach(x=>x.classList.toggle('active',x===btn));
+    $$('.stage-round').forEach(x=>x.classList.toggle('active',x.dataset.roundPanel===btn.dataset.roundTab));
+  });
+}
+
 function switchView(v,updateHash=true){
   currentView=v;$$('.tab').forEach(b=>{const active=b.dataset.view===v;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
-  $('#overviewView').classList.toggle('hidden',v!=='overview');$('#evolutionView').classList.toggle('hidden',v!=='evolution');$('#dexView').classList.toggle('hidden',v!=='dex');$('#stageNav').classList.toggle('hidden',v!=='evolution');
+  $('#overviewView').classList.toggle('hidden',v!=='overview');$('#evolutionView').classList.toggle('hidden',v!=='evolution');$('#dexView').classList.toggle('hidden',v!=='dex');$('#stagesView').classList.toggle('hidden',v!=='stages');$('#stageNav').classList.toggle('hidden',v!=='evolution');if(v==='stages')renderStages();
   $('.filterbar').classList.toggle('dex-mode',v==='dex');
   if(updateHash)history.replaceState(null,'',canonicalHash(v));
   scrollTo({top:0,behavior:'smooth'});
