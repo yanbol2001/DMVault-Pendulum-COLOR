@@ -259,7 +259,7 @@ function routeColumn(e,options={}){
   </div>`;
 }
 function renderHome(){
-  $('#overviewView').innerHTML=`
+  $('#homeView').innerHTML=`
     <section class="about-hero">
       <span class="about-kicker">DIGIMON PENDULUM COLOR DATABASE</span>
       <h1>DMVault Pendulum COLOR</h1>
