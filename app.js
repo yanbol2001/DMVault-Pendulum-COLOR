@@ -259,70 +259,50 @@ function routeColumn(e,options={}){
   </div>`;
 }
 function renderOverview(){
-  const visible=filteredDigimon();
-  const raised=loadRaised();
-  const active=activeCultivations();
-  const versionName=DATA.meta?.version_name||'';
-  const versionCode=(DATA.meta?.version||ACTIVE_VERSION.toUpperCase()).toUpperCase();
-  const cultivationRows=active.length?active.map(item=>{
-    const target=byName(item.e.to);
-    const countdown=item.info.key==='done'?'可進化':formatRemaining(item.remaining);
-    return `<button class="cultivation-item status-${item.info.key}" type="button" data-cultivation-target="${target?.id||''}">
-      <span class="cultivation-state">${item.info.label}</span>
-      <strong>${esc(item.e.to)}</strong>
-      <small>${esc(item.e.from)} → ${esc(item.e.to)}</small>
-      <span class="cultivation-time">${countdown}</span>
-    </button>`;
-  }).join(''):'<div class="cultivation-empty">目前沒有培養中的進化計時。</div>';
-  const evolutionCount=DATA.evolutions.filter(e=>visible.some(d=>d.name_zh===e.from)).length;
   $('#overviewView').innerHTML=`
-    <section class="home-hero">
-      <div class="home-hero-copy">
-        <span class="home-eyebrow">DMVault · PENDULUM COLOR</span>
-        <h1>${esc(versionCode)} ${esc(versionName)}</h1>
-        <p>集中查閱進化條件、圖鑑、關卡與基本操作。V0～V5 資料皆可由上方版本列快速切換。</p>
-        <div class="home-actions">
-          <button type="button" data-home-view="evolution">查看進化條件</button>
-          <button type="button" data-home-view="dex">開啟圖鑑</button>
-          <button type="button" data-home-view="stages">查看關卡</button>
-          <button type="button" data-home-view="guide" class="secondary">基本操作</button>
-        </div>
-      </div>
-      <div class="home-version-mark" aria-hidden="true"><span>${esc(versionCode)}</span><strong>${esc(versionName)}</strong></div>
+    <section class="about-hero">
+      <span class="about-kicker">DIGIMON PENDULUM COLOR DATABASE</span>
+      <h1>DMVault Pendulum COLOR</h1>
+      <p>《DIGIMON PENDULUM COLOR》中文攻略資料整理網站。</p>
     </section>
 
-    <section class="home-panel home-version-panel">
-      <div class="home-section-heading"><div><span>VERSION SELECT</span><h2>版本快速入口</h2></div><p>直接切換到各版本的完整資料。</p></div>
-      <div class="home-version-grid">
-        ${[
-          ['v0','V0','病毒剋星'],['v1','V1','自然靈魂'],['v2','V2','深海救星'],
-          ['v3','V3','噩夢軍團'],['v4','V4','風之守衛'],['v5','V5','鋼之帝國']
-        ].map(([id,code,name])=>`<button type="button" class="home-version-card ${id===ACTIVE_VERSION?'active':''}" data-home-version="${id}"><span>${code}</span><strong>${name}</strong><small>${id===ACTIVE_VERSION?'目前版本':'切換版本 →'}</small></button>`).join('')}
-      </div>
-    </section>
-
-    <div class="overview-grid home-stats">
-      <article class="stat-card"><strong>${visible.length}</strong><span>數碼獸</span></article>
-      <article class="stat-card"><strong>${evolutionCount}</strong><span>進化條件</span></article>
-      <article class="stat-card"><strong>${raised.size} / ${DATA.digimon.length}</strong><span>已養過</span></article>
-    </div>
-
-    <section class="overview-section cultivation-overview"><div class="overview-title-row"><h2>目前培養</h2><span>${active.length} 項</span></div><div class="cultivation-list">${cultivationRows}</div></section>
-    <section class="overview-section"><div class="overview-title-row"><h2>依階段瀏覽</h2><span>快速進入進化頁</span></div><div class="overview-stages">${stageOrder.map(stage=>{const count=visible.filter(d=>d.stage===stage).length;return count?`<button class="overview-stage" data-stage="${stage}"><strong>${stage}</strong><span>${count} 隻 →</span></button>`:''}).join('')}</div></section>
-
-    <section class="home-panel home-projects">
-      <div class="home-section-heading"><div><span>DMVAULT PROJECTS</span><h2>其他作品</h2></div><p>集中放置 MH 與之後完成的攻略工具。</p></div>
-      <div class="home-project-grid">
-        <a class="home-project-card available" href="https://yanbol2001.github.io/DMVault_MH20th/" target="_blank" rel="noopener noreferrer">
-          <span class="project-status">已公開</span><strong>DMVault MH 20th</strong><p>魔物獵人 20 週年聯名對打機攻略工具。</p><small>開啟作品 ↗</small>
+    <section class="about-section">
+      <h2>DMVault 系列</h2>
+      <div class="project-link-grid">
+        <a class="project-link-card" href="https://yanbol2001.github.io/DMVault_MH20th/" target="_blank" rel="noopener noreferrer">
+          <span>已公開</span><strong>DMVault MH20th</strong><small>前往網站 ↗</small>
         </a>
-        <div class="home-project-card future"><span class="project-status">COMING NEXT</span><strong>更多 DMVault 作品</strong><p>哥吉拉與後續系列完成後，將由此處加入連結。</p><small>預留位置</small></div>
+        <div class="project-link-card current"><span>目前網站</span><strong>DMVault Pendulum COLOR</strong><small>V0～V5</small></div>
+        <div class="project-link-card pending"><span>COMING SOON</span><strong>更多 DMVault 作品</strong><small>後續新增</small></div>
       </div>
-    </section>`;
-  $$('#overviewView .overview-stage').forEach(b=>b.onclick=()=>{stageFilter=b.dataset.stage;$('#stageFilter').value=stageFilter;render();switchView('evolution');});
-  $$('[data-cultivation-target]').forEach(b=>b.onclick=()=>b.dataset.cultivationTarget&&jumpToDigimon(b.dataset.cultivationTarget));
-  $$('[data-home-view]').forEach(b=>b.onclick=()=>switchView(b.dataset.homeView));
-  $$('[data-home-version]').forEach(b=>b.onclick=()=>document.querySelector(`.version[data-version="${b.dataset.homeVersion}"]`)?.click());
+    </section>
+
+    <section class="about-section">
+      <h2>特別感謝</h2>
+      <div class="credit-grid">
+        <article class="credit-card">
+          <h3>原始資料整理</h3>
+          <div class="credit-name">iLoveHTC、李溫</div>
+          <p>感謝整理《DIGIMON PENDULUM COLOR 中文攻略》試算表資料。</p>
+          <p><a href="https://docs.google.com/spreadsheets/d/15ZNsy_bM15Ht7fQiwgvIugUOnd62CMQ4qiHsnkj5jbE/htmlview#gid=184361674" target="_blank" rel="noopener noreferrer">Google 試算表 ↗</a></p>
+        </article>
+        <article class="credit-card">
+          <h3>參考資料</h3>
+          <div class="credit-name">Humulos</div>
+          <p><a href="https://humulos.com/digimon/penc/" target="_blank" rel="noopener noreferrer">Digitama Hatchery ↗</a></p>
+          <p>Bandai 官方說明書</p>
+        </article>
+        <article class="credit-card">
+          <h3>網站製作</h3>
+          <div class="credit-name">紫硯</div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="about-footer">
+      <strong>DMVault Pendulum COLOR</strong><br>
+      本網站為玩家自製資料整理網站，僅供研究、攻略整理與交流使用。Digimon 及相關名稱、圖片與商標均屬原權利人所有。
+    </footer>`;
 }
 function renderStageNav(){
   const available=stageOrder.filter(stage=>DATA.digimon.some(d=>d.stage===stage&&matches(d)));
@@ -805,8 +785,8 @@ function renderStages(){
 }
 
 function switchView(v,updateHash=true){
-  currentView=v;$$('.tab').forEach(b=>{const active=b.dataset.view===v;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
-  $('#guideView').classList.toggle('hidden',v!=='guide');$('#overviewView').classList.toggle('hidden',v!=='overview');$('#evolutionView').classList.toggle('hidden',v!=='evolution');$('#dexView').classList.toggle('hidden',v!=='dex');$('#stagesView').classList.toggle('hidden',v!=='stages');$('#stageNav').classList.toggle('hidden',v!=='evolution');document.querySelector('.filterbar')?.classList.toggle('hidden',v==='guide'||v==='stages');document.querySelector('.search')?.classList.toggle('hidden',v==='guide'||v==='stages');$('#summary')?.classList.toggle('hidden',v==='guide'||v==='stages');if(v==='stages')renderStages();if(v==='guide')renderGuide();
+  currentView=v;$('[data-home-overview]')?.classList.toggle('active',v==='overview');$$('.tab').forEach(b=>{const active=b.dataset.view===v;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
+  $('#guideView').classList.toggle('hidden',v!=='guide');$('#overviewView').classList.toggle('hidden',v!=='overview');$('#evolutionView').classList.toggle('hidden',v!=='evolution');$('#dexView').classList.toggle('hidden',v!=='dex');$('#stagesView').classList.toggle('hidden',v!=='stages');$('#stageNav').classList.toggle('hidden',v!=='evolution');document.querySelector('.toolbar')?.classList.toggle('hidden',v==='overview');document.querySelector('.filterbar')?.classList.toggle('hidden',v==='guide'||v==='stages'||v==='overview');document.querySelector('.search')?.classList.toggle('hidden',v==='guide'||v==='stages'||v==='overview');$('#summary')?.classList.toggle('hidden',v==='guide'||v==='stages'||v==='overview');if(v==='stages')renderStages();if(v==='guide')renderGuide();
   $('.filterbar').classList.toggle('dex-mode',v==='dex');
   if(updateHash)history.replaceState(null,'',canonicalHash(v));
   scrollTo({top:0,behavior:'smooth'});
@@ -826,6 +806,7 @@ const guideRequest=fetch('data/guide.json')
   .catch(err=>{console.warn('基本操作資料載入失敗：',err);return null;});
 Promise.all([dataRequest,stageRequest,guideRequest]).then(([d,stageData,guideData])=>{DATA=d;STAGE_DATA=stageData;GUIDE_DATA=guideData;document.title=`DMVault｜Pendulum COLOR ${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}`;document.querySelectorAll('.version[data-version]').forEach(b=>{const active=b.dataset.version===ACTIVE_VERSION;b.classList.toggle('active',active);b.toggleAttribute('aria-current',active);});const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML=`<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/${ACTIVE_VERSION}.json 已一併上傳。</span></div>`;console.error(err);});
 $$('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+$('[data-home-overview]')?.addEventListener('click',()=>switchView('overview'));
 $('#searchInput').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();renderSearchSuggestions();});
 $('#searchInput').addEventListener('focus',renderSearchSuggestions);
 document.addEventListener('click',e=>{if(!e.target.closest('.search-box'))$('#searchSuggestions')?.classList.add('hidden');});
