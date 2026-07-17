@@ -262,8 +262,10 @@ function renderOverview(){
   const visible=filteredDigimon();
   const raised=loadRaised();
   const active=activeCultivations();
+  const versionName=DATA.meta?.version_name||'';
+  const versionCode=(DATA.meta?.version||ACTIVE_VERSION.toUpperCase()).toUpperCase();
   const cultivationRows=active.length?active.map(item=>{
-    const target=byName(item.e.to),source=byName(item.e.from);
+    const target=byName(item.e.to);
     const countdown=item.info.key==='done'?'可進化':formatRemaining(item.remaining);
     return `<button class="cultivation-item status-${item.info.key}" type="button" data-cultivation-target="${target?.id||''}">
       <span class="cultivation-state">${item.info.label}</span>
@@ -272,16 +274,55 @@ function renderOverview(){
       <span class="cultivation-time">${countdown}</span>
     </button>`;
   }).join(''):'<div class="cultivation-empty">目前沒有培養中的進化計時。</div>';
+  const evolutionCount=DATA.evolutions.filter(e=>visible.some(d=>d.name_zh===e.from)).length;
   $('#overviewView').innerHTML=`
-    <div class="overview-grid">
+    <section class="home-hero">
+      <div class="home-hero-copy">
+        <span class="home-eyebrow">DMVault · PENDULUM COLOR</span>
+        <h1>${esc(versionCode)} ${esc(versionName)}</h1>
+        <p>集中查閱進化條件、圖鑑、關卡與基本操作。V0～V5 資料皆可由上方版本列快速切換。</p>
+        <div class="home-actions">
+          <button type="button" data-home-view="evolution">查看進化條件</button>
+          <button type="button" data-home-view="dex">開啟圖鑑</button>
+          <button type="button" data-home-view="stages">查看關卡</button>
+          <button type="button" data-home-view="guide" class="secondary">基本操作</button>
+        </div>
+      </div>
+      <div class="home-version-mark" aria-hidden="true"><span>${esc(versionCode)}</span><strong>${esc(versionName)}</strong></div>
+    </section>
+
+    <section class="home-panel home-version-panel">
+      <div class="home-section-heading"><div><span>VERSION SELECT</span><h2>版本快速入口</h2></div><p>直接切換到各版本的完整資料。</p></div>
+      <div class="home-version-grid">
+        ${[
+          ['v0','V0','病毒剋星'],['v1','V1','自然靈魂'],['v2','V2','深海救星'],
+          ['v3','V3','噩夢軍團'],['v4','V4','風之守衛'],['v5','V5','鋼之帝國']
+        ].map(([id,code,name])=>`<button type="button" class="home-version-card ${id===ACTIVE_VERSION?'active':''}" data-home-version="${id}"><span>${code}</span><strong>${name}</strong><small>${id===ACTIVE_VERSION?'目前版本':'切換版本 →'}</small></button>`).join('')}
+      </div>
+    </section>
+
+    <div class="overview-grid home-stats">
       <article class="stat-card"><strong>${visible.length}</strong><span>數碼獸</span></article>
-      <article class="stat-card"><strong>${DATA.evolutions.filter(e=>visible.some(d=>d.name_zh===e.from)).length}</strong><span>進化條件</span></article>
+      <article class="stat-card"><strong>${evolutionCount}</strong><span>進化條件</span></article>
       <article class="stat-card"><strong>${raised.size} / ${DATA.digimon.length}</strong><span>已養過</span></article>
     </div>
+
     <section class="overview-section cultivation-overview"><div class="overview-title-row"><h2>目前培養</h2><span>${active.length} 項</span></div><div class="cultivation-list">${cultivationRows}</div></section>
-    <section class="overview-section"><h2>依階段瀏覽</h2><div class="overview-stages">${stageOrder.map(stage=>{const count=visible.filter(d=>d.stage===stage).length;return count?`<button class="overview-stage" data-stage="${stage}"><strong>${stage}</strong><span>${count} 隻 →</span></button>`:''}).join('')}</div></section>`;
+    <section class="overview-section"><div class="overview-title-row"><h2>依階段瀏覽</h2><span>快速進入進化頁</span></div><div class="overview-stages">${stageOrder.map(stage=>{const count=visible.filter(d=>d.stage===stage).length;return count?`<button class="overview-stage" data-stage="${stage}"><strong>${stage}</strong><span>${count} 隻 →</span></button>`:''}).join('')}</div></section>
+
+    <section class="home-panel home-projects">
+      <div class="home-section-heading"><div><span>DMVAULT PROJECTS</span><h2>其他作品</h2></div><p>集中放置 MH 與之後完成的攻略工具。</p></div>
+      <div class="home-project-grid">
+        <a class="home-project-card available" href="https://yanbol2001.github.io/DMVault_MH20th/" target="_blank" rel="noopener noreferrer">
+          <span class="project-status">已公開</span><strong>DMVault MH 20th</strong><p>魔物獵人 20 週年聯名對打機攻略工具。</p><small>開啟作品 ↗</small>
+        </a>
+        <div class="home-project-card future"><span class="project-status">COMING NEXT</span><strong>更多 DMVault 作品</strong><p>哥吉拉與後續系列完成後，將由此處加入連結。</p><small>預留位置</small></div>
+      </div>
+    </section>`;
   $$('#overviewView .overview-stage').forEach(b=>b.onclick=()=>{stageFilter=b.dataset.stage;$('#stageFilter').value=stageFilter;render();switchView('evolution');});
   $$('[data-cultivation-target]').forEach(b=>b.onclick=()=>b.dataset.cultivationTarget&&jumpToDigimon(b.dataset.cultivationTarget));
+  $$('[data-home-view]').forEach(b=>b.onclick=()=>switchView(b.dataset.homeView));
+  $$('[data-home-version]').forEach(b=>b.onclick=()=>document.querySelector(`.version[data-version="${b.dataset.homeVersion}"]`)?.click());
 }
 function renderStageNav(){
   const available=stageOrder.filter(stage=>DATA.digimon.some(d=>d.stage===stage&&matches(d)));
@@ -710,7 +751,6 @@ function renderGuide(){
   box.innerHTML=`<article class="guide-document guide-reformatted">
     <header class="guide-hero">
       <div><span class="guide-kicker">PENDULUM COLOR 共用說明</span><h1>${esc(GUIDE_DATA.title)}</h1><p>依原始攻略試算表重新編排，內容完整保留，V0～V5 共用。</p></div>
-      <div class="guide-hero-badge"><strong>${sourceRows.length}</strong><span>筆原始資料</span></div>
     </header>
     <div class="guide-layout">
       <aside class="guide-toc" aria-label="說明章節"><strong>章節</strong>${groups.map(g=>`<a href="#guide-${g.id}"><span>${g.icon}</span>${esc(g.title)}</a>`).join('')}</aside>
