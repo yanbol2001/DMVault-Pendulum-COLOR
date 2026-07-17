@@ -644,37 +644,37 @@ function renderStages(){
     return;
   }
   const digimonByNo=new Map(DATA.digimon.map(d=>[Number(d.dex_no),d]));
-  const rounds=STAGE_DATA.rounds.map((round,ri)=>{
-    const cards=round.enemies.map((e,i)=>{
+  const stageHeaders=Array.from({length:10},(_,i)=>`<th scope="col">第${['一','二','三','四','五','六','七','八','九','十'][i]}關</th>`).join('');
+  const roundRows=STAGE_DATA.rounds.map(round=>{
+    const cells=(rowIndex)=>round.enemies.map((e,i)=>{
       const d=digimonByNo.get(Number(e[0]));
-      const attr=e[1],strength=e[2],attack=e[3],status=e[4],background=e[5];
-      return `<article class="stage-enemy-card ${i===9?'stage-boss-card':''}">
-        <div class="stage-number">第 ${i+1} 關${i===9?'<span> BOSS</span>':''}</div>
-        <div class="stage-enemy-visual">${d?sprite(d,'stage-enemy-sprite'):''}</div>
-        <h3>${d?esc(d.name_zh):'資料待確認'}</h3>
-        <div class="stage-enemy-meta"><span class="attr-${esc(attr)}">${esc(attr)}</span><strong>強度 ${esc(strength)}</strong></div>
-        <dl class="stage-details">
-          <div><dt>攻擊發數</dt><dd class="attack-pattern">${stageAttackPattern(attack)}</dd></div>
-          <div><dt>負面狀態</dt><dd>${status==='-'?'<span class="muted">無</span>':esc(status)}</dd></div>
-        </dl>
-        ${background?`<div class="stage-unlock"><span>通關解鎖背景</span><strong>${esc(background)}</strong></div>`:''}
-      </article>`;
+      const attr=e[1],strength=e[2],attack=e[3],status=e[4];
+      if(rowIndex===0)return `<td class="stage-table-image ${i===9?'is-boss':''}">${d?sprite(d,'stage-table-sprite'):'<span class="muted">待確認</span>'}</td>`;
+      if(rowIndex===1)return `<td><span class="attr-${esc(attr)}">${esc(attr)}</span></td>`;
+      if(rowIndex===2)return `<td>${esc(strength)}</td>`;
+      if(rowIndex===3)return `<td class="stage-table-attack">${esc(attack)}</td>`;
+      return `<td class="stage-table-status">${status==='-'?'-':esc(status)}</td>`;
     }).join('');
-    return `<section class="stage-round ${ri===0?'active':''}" data-round-panel="${round.id}">
-      <div class="stage-round-heading"><h2>${esc(round.label)}</h2><span>10 關</span></div>
-      <div class="stage-enemy-grid">${cards}</div>
-    </section>`;
+    return `<tbody class="stage-round-group">
+      <tr><th class="stage-round-name" scope="rowgroup" rowspan="5">${esc(round.label)}</th><th scope="row">圖案</th>${cells(0)}</tr>
+      <tr><th scope="row">屬性</th>${cells(1)}</tr>
+      <tr><th scope="row">強度</th>${cells(2)}</tr>
+      <tr><th scope="row">攻擊發數</th>${cells(3)}</tr>
+      <tr><th scope="row">負面狀態</th>${cells(4)}</tr>
+    </tbody>`;
   }).join('');
-  box.innerHTML=`<section class="stage-page">
-    <div class="stage-page-header"><div><span class="stage-page-kicker">Pendulum COLOR Battle Area</span><h1>${esc(STAGE_DATA.title)}</h1><p>${esc(STAGE_DATA.note)}</p></div>
-      <div class="stage-round-tabs">${STAGE_DATA.rounds.map((r,i)=>`<button type="button" class="${i===0?'active':''}" data-round-tab="${r.id}">${esc(r.label)}</button>`).join('')}</div>
-    </div>${rounds}
-    <aside class="stage-legend"><strong>攻擊發數：</strong><span class="attack-step attack-1">1</span> 普通攻擊　<span class="attack-step attack-2">2</span> 強攻擊 <small>（依攻略原始編碼顯示）</small></aside>
+  const backgrounds=STAGE_DATA.rounds[0].enemies.map(e=>e[5]?`<td><span class="stage-bg-badge">${esc(e[5])}</span></td>`:'<td>-</td>').join('');
+  box.innerHTML=`<section class="stage-table-page">
+    <div class="stage-table-header"><div><span class="stage-page-kicker">Pendulum COLOR Battle Area</span><h1>${esc(STAGE_DATA.title)}</h1><p>${esc(STAGE_DATA.note)}</p></div></div>
+    <div class="stage-table-scroll">
+      <table class="stage-comparison-table">
+        <thead><tr><th>版本</th><th>回合數</th><th>敵方資料</th>${stageHeaders}</tr></thead>
+        ${roundRows}
+        <tfoot><tr><th colspan="2"></th><th>解鎖背景</th>${backgrounds}</tr></tfoot>
+      </table>
+    </div>
+    <aside class="stage-legend"><strong>攻擊發數：</strong>數字依攻略原始編碼顯示；第 8～10 關可能附帶命中降低效果。</aside>
   </section>`;
-  $$('[data-round-tab]').forEach(btn=>btn.onclick=()=>{
-    $$('[data-round-tab]').forEach(x=>x.classList.toggle('active',x===btn));
-    $$('.stage-round').forEach(x=>x.classList.toggle('active',x.dataset.roundPanel===btn.dataset.roundTab));
-  });
 }
 
 function switchView(v,updateHash=true){
