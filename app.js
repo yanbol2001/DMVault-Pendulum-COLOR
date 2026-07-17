@@ -642,11 +642,82 @@ function renderGuide(){
   const box=$('#guideView');
   if(!box)return;
   if(!GUIDE_DATA){box.innerHTML='<section class="guide-document"><h1>基本操作</h1><p>說明資料載入失敗。</p></section>';return;}
-  const rows=GUIDE_DATA.rows.map(item=>{
-    const cells=item.cells.map((value,index)=>{const text=String(value||'');return `<td class="${text?'has-text':''}" data-col="${String.fromCharCode(65+index)}">${text?esc(text).replace(/\n/g,'<br>'):''}</td>`;}).join('');
-    return `<tr data-source-row="${item.row}">${cells}</tr>`;
-  }).join('');
-  box.innerHTML=`<article class="guide-document"><header><h1>${esc(GUIDE_DATA.title)}</h1><p>內容依原始攻略試算表「${esc(GUIDE_DATA.source_sheet)}」工作表移植，暫未重新編排或美化。</p></header><div class="guide-sheet-scroll"><table class="guide-sheet" aria-label="基本操作原始內容"><colgroup>${'<col>'.repeat(8)}</colgroup><tbody>${rows}</tbody></table></div></article>`;
+
+  const sourceRows=GUIDE_DATA.rows.map(item=>({
+    row:Number(item.row),
+    cells:item.cells.map(value=>String(value||'').trim()),
+    values:item.cells.map(value=>String(value||'').trim()).filter(Boolean)
+  }));
+  const rowMap=new Map(sourceRows.map(item=>[item.row,item]));
+
+  const groups=[
+    {id:'status',title:'數據統計',icon:'01',from:1,to:65,lead:'查看數碼獸的狀態、相簿、屬性、勝率與強度。'},
+    {id:'food',title:'食物',icon:'02',from:68,to:72,lead:'肉塊與蛋白質對飢餓、力量、體重及體力的影響。'},
+    {id:'training',title:'訓練',icon:'03',from:74,to:96,lead:'訓練成果、搖晃次數、屬性與 MEGAHIT 的關係。'},
+    {id:'battle',title:'戰鬥跟合體',icon:'04',from:99,to:133,lead:'任務、連線、合體、受傷機率與命中公式。'},
+    {id:'care',title:'日常照顧',icon:'05',from:135,to:185,lead:'廁所、睡眠、冷凍、交換、治療與呼叫。'},
+    {id:'settings',title:'設定',icon:'06',from:187,to:204,lead:'背景、亮度、聲音、保存與關機。'},
+    {id:'extra',title:'其餘補充',icon:'07',from:206,to:999,lead:'死亡、復活、搖蛋與繼承蛋等補充規則。'}
+  ];
+  const sectionTitleRows=new Set([3,68,74,99,135,140,149,153,160,173,187,206]);
+  const subTitleRows=new Set([6,8,11,15,18,21,25,29,34,40,45,49,55,102,103,108,111,114,115,120,126,141,150,154,191,194,197,201,208,222,227,231]);
+  const tableRanges=[[60,65],[79,83],[91,96]];
+  const tableStart=new Map(tableRanges.map(r=>[r[0],r]));
+  const tableRows=new Set(tableRanges.flatMap(([a,b])=>Array.from({length:b-a+1},(_,i)=>a+i)));
+
+  const renderTable=([from,to])=>{
+    const rows=[];
+    for(let n=from;n<=to;n++){
+      const item=rowMap.get(n);if(!item)continue;
+      let cells=item.cells.slice();
+      while(cells.length&&cells[cells.length-1]==='')cells.pop();
+      while(cells.length&&cells[0]==='')cells.shift();
+      rows.push(cells);
+    }
+    if(!rows.length)return '';
+    const maxCols=Math.max(...rows.map(r=>r.length));
+    const header=rows[0];
+    const body=rows.slice(1);
+    return `<div class="guide-data-table-wrap"><table class="guide-data-table"><thead><tr>${header.map((c,i)=>`<th${i===maxCols-1&&header.length>5?' class="guide-table-note"':''}>${esc(c).replace(/\n/g,'<br>')}</th>`).join('')}</tr></thead><tbody>${body.map(r=>`<tr>${Array.from({length:maxCols},(_,i)=>`<td>${r[i]?esc(r[i]).replace(/\n/g,'<br>'):''}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  };
+
+  const renderGroup=group=>{
+    const items=sourceRows.filter(item=>item.row>=group.from&&item.row<=group.to);
+    let html='';
+    for(const item of items){
+      if(tableRows.has(item.row)){
+        if(tableStart.has(item.row))html+=renderTable(tableStart.get(item.row));
+        continue;
+      }
+      if(!item.values.length)continue;
+      const text=item.values.join('\n');
+      if(sectionTitleRows.has(item.row)){
+        if(item.row===group.from||text===group.title||item.row===3||item.row===99||item.row===187||item.row===206)continue;
+        html+=`<h3 class="guide-subsection-title">${esc(text)}</h3>`;
+      }else if(subTitleRows.has(item.row)){
+        html+=`<h3 class="guide-item-title">${esc(text)}</h3>`;
+      }else if(item.values.length>1){
+        html+=`<div class="guide-inline-grid">${item.values.map(v=>`<div>${esc(v).replace(/\n/g,'<br>')}</div>`).join('')}</div>`;
+      }else{
+        const parts=text.split('\n').filter(Boolean);
+        if(parts.length>1)html+=`<ul class="guide-list">${parts.map(v=>`<li>${esc(v)}</li>`).join('')}</ul>`;
+        else html+=`<p>${esc(text)}</p>`;
+      }
+    }
+    return `<section id="guide-${group.id}" class="guide-section"><header class="guide-section-header"><span class="guide-section-no">${group.icon}</span><div><h2>${esc(group.title)}</h2><p>${esc(group.lead)}</p></div></header><div class="guide-section-body">${html}</div></section>`;
+  };
+
+  box.innerHTML=`<article class="guide-document guide-reformatted">
+    <header class="guide-hero">
+      <div><span class="guide-kicker">PENDULUM COLOR 共用說明</span><h1>${esc(GUIDE_DATA.title)}</h1><p>依原始攻略試算表重新編排，內容完整保留，V0～V5 共用。</p></div>
+      <div class="guide-hero-badge"><strong>${sourceRows.length}</strong><span>筆原始資料</span></div>
+    </header>
+    <div class="guide-layout">
+      <aside class="guide-toc" aria-label="說明章節"><strong>章節</strong>${groups.map(g=>`<a href="#guide-${g.id}"><span>${g.icon}</span>${esc(g.title)}</a>`).join('')}</aside>
+      <div class="guide-content">${groups.map(renderGroup).join('')}</div>
+    </div>
+  </article>`;
+  $$('.guide-toc a').forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth',block:'start'});});
 }
 
 function renderStages(){
