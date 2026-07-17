@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="description" content="DMVault Pendulum COLOR 進化條件與圖鑑">
 <title>DMVault｜Pendulum COLOR</title>
-<link rel="stylesheet" href="styles.css?v=068">
+<link rel="stylesheet" href="styles.css?v=073">
 </head>
 <body>
 <header class="topbar">
@@ -20,6 +20,7 @@
 <main>
   <section class="toolbar compact-toolbar" aria-label="內容工具列">
     <div class="tabs" role="tablist">
+      <button data-view="guide" class="tab" role="tab">基本操作</button>
       <button data-view="overview" class="tab active" role="tab">總覽</button>
       <button data-view="evolution" class="tab" role="tab">進化條件</button>
       <button data-view="dex" class="tab" role="tab">圖鑑</button>
@@ -36,6 +37,7 @@
     <label class="search"><span class="search-label">搜尋</span><span class="search-box"><input id="searchInput" type="search" autocomplete="off" placeholder="名稱、編號、階段、屬性"><button id="clearSearch" type="button" aria-label="清除搜尋">×</button><div id="searchSuggestions" class="search-suggestions hidden" role="listbox"></div></span></label>
   </section>
   <nav id="stageNav" class="stage-nav hidden" aria-label="階段快速跳轉"></nav>
+  <section id="guideView" class="view hidden"></section>
   <section id="overviewView" class="view"></section>
   <section id="evolutionView" class="view hidden"></section>
   <section id="dexView" class="view hidden"></section>
@@ -43,7 +45,7 @@
 </main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <button id="backToTop" class="back-top" type="button" aria-label="返回頂端">↑</button>
-<footer>資料來源：DIGIMON PENDULUM COLOR 中文攻略｜框架版本 v0.68 V0 Stage</footer>
-<script src="app.js?v=068"></script>
+<footer>資料來源：DIGIMON PENDULUM COLOR 中文攻略｜文件移植版 v0.73</footer>
+<script src="app.js?v=073"></script>
 </body>
 </html>

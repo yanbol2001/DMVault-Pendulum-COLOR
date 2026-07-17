@@ -2,7 +2,7 @@ const ACTIVE_VERSION=(new URLSearchParams(location.search).get('version')||'v0')
 document.documentElement.classList.add(`pc-theme-${ACTIVE_VERSION}`);
 const VERSION_LABELS={v0:'V0 病毒剋星',v1:'V1 自然靈魂',v2:'V2 深海救星',v3:'V3 噩夢軍團',v4:'V4 風之守衛',v5:'V5 鋼之帝國'};
 const stageOrder=['幼年期1','幼年期2','成長期','成熟期','完全體','究極體','超究極體'];
-let DATA=null, STAGE_DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
+let DATA=null, STAGE_DATA=null, GUIDE_DATA=null, query='', currentView='overview', stageFilter='', attributeFilter='';
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -632,11 +632,23 @@ function updateSummary(){
   if(query)parts.push(`搜尋「${$('#searchInput').value.trim()}」`);if(stageFilter)parts.push(stageFilter);if(attributeFilter)parts.push(attributeFilter);
   $('#summary').textContent=parts.length?`${parts.join('／')}：${visible} 隻`:`${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}｜${DATA.digimon.length} 隻數碼獸${DATA.evolutions.length?`／${DATA.evolutions.length} 組進化條件`:'／進化條件待加入'}`;
 }
-function render(){renderOverview();renderEvolution();renderDex();updateSummary();renderSearchSuggestions();}
+function render(){renderGuide();renderOverview();renderEvolution();renderDex();updateSummary();renderSearchSuggestions();}
 
 function stageAttackPattern(value){
   return String(value||'').split('').map((n,i)=>`<span class="attack-digit ${n==='2'?'is-double':''}" title="第 ${i+1} 發：${n==='2'?'兩發攻擊':'一發攻擊'}">${esc(n)}</span>`).join('');
 }
+
+function renderGuide(){
+  const box=$('#guideView');
+  if(!box)return;
+  if(!GUIDE_DATA){box.innerHTML='<section class="guide-document"><h1>基本操作</h1><p>說明資料載入失敗。</p></section>';return;}
+  const rows=GUIDE_DATA.rows.map(item=>{
+    const cells=item.cells.map((value,index)=>{const text=String(value||'');return `<td class="${text?'has-text':''}" data-col="${String.fromCharCode(65+index)}">${text?esc(text).replace(/\n/g,'<br>'):''}</td>`;}).join('');
+    return `<tr data-source-row="${item.row}">${cells}</tr>`;
+  }).join('');
+  box.innerHTML=`<article class="guide-document"><header><h1>${esc(GUIDE_DATA.title)}</h1><p>內容依原始攻略試算表「${esc(GUIDE_DATA.source_sheet)}」工作表移植，暫未重新編排或美化。</p></header><div class="guide-sheet-scroll"><table class="guide-sheet" aria-label="基本操作原始內容"><colgroup>${'<col>'.repeat(8)}</colgroup><tbody>${rows}</tbody></table></div></article>`;
+}
+
 function renderStages(){
   const box=$('#stagesView');
   if(!STAGE_DATA){
@@ -683,7 +695,7 @@ function renderStages(){
 
 function switchView(v,updateHash=true){
   currentView=v;$$('.tab').forEach(b=>{const active=b.dataset.view===v;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
-  $('#overviewView').classList.toggle('hidden',v!=='overview');$('#evolutionView').classList.toggle('hidden',v!=='evolution');$('#dexView').classList.toggle('hidden',v!=='dex');$('#stagesView').classList.toggle('hidden',v!=='stages');$('#stageNav').classList.toggle('hidden',v!=='evolution');if(v==='stages')renderStages();
+  $('#guideView').classList.toggle('hidden',v!=='guide');$('#overviewView').classList.toggle('hidden',v!=='overview');$('#evolutionView').classList.toggle('hidden',v!=='evolution');$('#dexView').classList.toggle('hidden',v!=='dex');$('#stagesView').classList.toggle('hidden',v!=='stages');$('#stageNav').classList.toggle('hidden',v!=='evolution');document.querySelector('.filterbar')?.classList.toggle('hidden',v==='guide'||v==='stages');document.querySelector('.search')?.classList.toggle('hidden',v==='guide'||v==='stages');$('#summary')?.classList.toggle('hidden',v==='guide'||v==='stages');if(v==='stages')renderStages();if(v==='guide')renderGuide();
   $('.filterbar').classList.toggle('dex-mode',v==='dex');
   if(updateHash)history.replaceState(null,'',canonicalHash(v));
   scrollTo({top:0,behavior:'smooth'});
@@ -693,12 +705,15 @@ function populateFilters(){
   const attrs=[...new Set(DATA.digimon.map(d=>d.attribute).filter(Boolean))].sort();$('#attributeFilter').innerHTML='<option value="">全部屬性</option>'+attrs.map(a=>`<option>${esc(a)}</option>`).join('');
 }
 function parseHash(){const p=new URLSearchParams(location.hash.slice(1));return {view:p.get('view'),id:p.get('digimon')};}
-function restoreHash(){const {view,id}=parseHash();if(id&&DATA.digimon.some(d=>d.id===id)){switchView('evolution',false);setTimeout(()=>jumpToDigimon(id,false),80);return;}switchView(['overview','evolution','dex','stages'].includes(view)?view:'overview',false);}
+function restoreHash(){const {view,id}=parseHash();if(id&&DATA.digimon.some(d=>d.id===id)){switchView('evolution',false);setTimeout(()=>jumpToDigimon(id,false),80);return;}switchView(['guide','overview','evolution','dex','stages'].includes(view)?view:'overview',false);}
 const dataRequest=fetch(`data/${ACTIVE_VERSION}.json`).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()});
 const stageRequest=fetch(`data/stages-${ACTIVE_VERSION}.json`)
   .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
   .catch(err=>{console.warn(`${ACTIVE_VERSION.toUpperCase()} 關卡資料載入失敗：`,err);return null;});
-Promise.all([dataRequest,stageRequest]).then(([d,stageData])=>{DATA=d;STAGE_DATA=stageData;document.title=`DMVault｜Pendulum COLOR ${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}`;document.querySelectorAll('.version[data-version]').forEach(b=>{const active=b.dataset.version===ACTIVE_VERSION;b.classList.toggle('active',active);b.toggleAttribute('aria-current',active);});const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML=`<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/${ACTIVE_VERSION}.json 已一併上傳。</span></div>`;console.error(err);});
+const guideRequest=fetch('data/guide.json')
+  .then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()})
+  .catch(err=>{console.warn('基本操作資料載入失敗：',err);return null;});
+Promise.all([dataRequest,stageRequest,guideRequest]).then(([d,stageData,guideData])=>{DATA=d;STAGE_DATA=stageData;GUIDE_DATA=guideData;document.title=`DMVault｜Pendulum COLOR ${DATA.meta?.version||ACTIVE_VERSION.toUpperCase()} ${DATA.meta?.version_name||''}`;document.querySelectorAll('.version[data-version]').forEach(b=>{const active=b.dataset.version===ACTIVE_VERSION;b.classList.toggle('active',active);b.toggleAttribute('aria-current',active);});const counts=new Map();for(const e of DATA.evolutions)counts.set(e.from,(counts.get(e.from)||0)+1);const maxRoutes=Math.max(1,...counts.values());document.documentElement.style.setProperty('--route-columns',String(maxRoutes));populateFilters();render();restoreHash();}).catch(err=>{$('#overviewView').innerHTML=`<div class="load-error"><strong>資料載入失敗</strong><span>請確認 data/${ACTIVE_VERSION}.json 已一併上傳。</span></div>`;console.error(err);});
 $$('.tab').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
 $('#searchInput').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();renderSearchSuggestions();});
 $('#searchInput').addEventListener('focus',renderSearchSuggestions);
@@ -714,4 +729,4 @@ addEventListener('hashchange',()=>DATA&&restoreHash());
 
 let treeResizeTimer;addEventListener('resize',()=>{clearTimeout(treeResizeTimer);treeResizeTimer=setTimeout(drawTreeLines,120);});
 
-$$('.version[data-version]').forEach(b=>b.onclick=()=>{const u=new URL(location.href);u.searchParams.set('version',b.dataset.version);u.hash=currentView==='dex'?'view=dex':'view=overview';location.href=u.href;});
+$$('.version[data-version]').forEach(b=>b.onclick=()=>{const u=new URL(location.href);u.searchParams.set('version',b.dataset.version);u.hash=`view=${currentView}`;location.href=u.href;});

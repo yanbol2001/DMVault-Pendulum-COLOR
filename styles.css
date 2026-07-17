@@ -1217,3 +1217,8 @@ html[class*="pc-theme-v"] footer{color:color-mix(in srgb,var(--pc-ink) 80%,#666)
 .stage-table-attack .attack-digit.is-double{background:#e2aa2b;color:#fff;border:1px solid #a9780b;text-shadow:0 1px 0 rgba(0,0,0,.18)}
 .stage-round-start:not(:first-child)>*{border-top-width:2px}
 .stage-comparison-table tbody.stage-round-group{border:0}
+
+
+/* v0.73 — 基本操作文件移植版 */
+.guide-document{max-width:1180px;margin:18px auto 36px;padding:0 12px}.guide-document>header{margin-bottom:12px}.guide-document h1{margin:0 0 6px;font-size:1.55rem}.guide-document>header p{margin:0;color:#666}
+.guide-sheet-scroll{overflow-x:auto;border:1px solid #aaa;background:#fff}.guide-sheet{width:100%;min-width:980px;border-collapse:collapse;table-layout:fixed}.guide-sheet col:nth-child(1){width:34%}.guide-sheet col:nth-child(2){width:13%}.guide-sheet col:nth-child(3),.guide-sheet col:nth-child(4),.guide-sheet col:nth-child(5),.guide-sheet col:nth-child(6){width:9%}.guide-sheet col:nth-child(7){width:20%}.guide-sheet col:nth-child(8){width:6%}.guide-sheet td{border:1px solid #d0d0d0;padding:4px 7px;vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}.guide-sheet td:not(.has-text){background:#fafafa}.guide-sheet td.has-text{background:#fff}.guide-sheet td[data-col="B"].has-text{font-weight:700}@media(max-width:760px){.guide-document{padding:0 4px}.guide-sheet{min-width:900px}}
