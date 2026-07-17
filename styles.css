@@ -1209,3 +1209,11 @@ html[class*="pc-theme-v"] footer{color:color-mix(in srgb,var(--pc-ink) 80%,#666)
   .stage-comparison-table col.stage-col-label{width:82px}
   .stage-comparison-table col.stage-col-level{width:100px}
 }
+
+
+/* v0.68 Stage table structure + compact attack pattern fix */
+.stage-table-attack .attack-pattern{display:inline-flex;align-items:center;justify-content:center;gap:0;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:1.05rem;letter-spacing:.02em}
+.stage-table-attack .attack-digit{display:inline-flex;align-items:center;justify-content:center;width:1.05em;height:1.45em;line-height:1;border-radius:4px;color:#2f2a22;font-weight:700}
+.stage-table-attack .attack-digit.is-double{background:#e2aa2b;color:#fff;border:1px solid #a9780b;text-shadow:0 1px 0 rgba(0,0,0,.18)}
+.stage-round-start:not(:first-child)>*{border-top-width:2px}
+.stage-comparison-table tbody.stage-round-group{border:0}

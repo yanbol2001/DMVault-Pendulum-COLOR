@@ -635,7 +635,7 @@ function updateSummary(){
 function render(){renderOverview();renderEvolution();renderDex();updateSummary();renderSearchSuggestions();}
 
 function stageAttackPattern(value){
-  return String(value||'').split('').map((n,i)=>`<span class="attack-step attack-${esc(n)}" title="第 ${i+1} 發：${esc(n)}">${esc(n)}</span>`).join('');
+  return String(value||'').split('').map((n,i)=>`<span class="attack-digit ${n==='2'?'is-double':''}" title="第 ${i+1} 發：${n==='2'?'兩發攻擊':'一發攻擊'}">${esc(n)}</span>`).join('');
 }
 function renderStages(){
   const box=$('#stagesView');
@@ -658,13 +658,12 @@ function renderStages(){
       return `<td class="stage-table-status">${status==='-'?'-':esc(status)}</td>`;
     }).join('');
     const versionCell=roundIndex===0?`<th class="stage-version-name" scope="rowgroup" rowspan="${totalStageRows}">${esc(VERSION_LABELS[ACTIVE_VERSION])}</th>`:'';
-    return `<tbody class="stage-round-group">
-      <tr>${versionCell}<th class="stage-round-name" scope="rowgroup" rowspan="5">${esc(round.label)}</th><th scope="row">圖案</th>${cells(0)}</tr>
+    return `
+      <tr class="stage-round-start">${versionCell}<th class="stage-round-name" scope="rowgroup" rowspan="5">${esc(round.label)}</th><th scope="row">圖案</th>${cells(0)}</tr>
       <tr><th scope="row">屬性</th>${cells(1)}</tr>
       <tr><th scope="row">強度</th>${cells(2)}</tr>
       <tr><th scope="row">攻擊發數</th>${cells(3)}</tr>
-      <tr><th scope="row">負面狀態</th>${cells(4)}</tr>
-    </tbody>`;
+      <tr><th scope="row">負面狀態</th>${cells(4)}</tr>`;
   }).join('');
   const backgrounds=STAGE_DATA.rounds[0].enemies.map(e=>e[5]?`<td><span class="stage-bg-badge">${esc(e[5])}</span></td>`:'<td>-</td>').join('');
   box.innerHTML=`<section class="stage-table-page">
@@ -673,11 +672,12 @@ function renderStages(){
       <table class="stage-comparison-table">
         <colgroup><col class="stage-col-version"><col class="stage-col-round"><col class="stage-col-label">${'<col class="stage-col-level">'.repeat(10)}</colgroup>
         <thead><tr><th>版本</th><th>回合數</th><th>敵方資料</th>${stageHeaders}</tr></thead>
-        ${roundRows}
+        <tbody class="stage-round-group">${roundRows}
+        </tbody>
         <tfoot><tr><th colspan="2"></th><th>解鎖背景</th>${backgrounds}</tr></tfoot>
       </table>
     </div>
-    <aside class="stage-legend"><strong>攻擊發數：</strong>圓點中的 1／2 代表每一發攻擊類型；第 8、9、F 關可能附帶命中降低效果。</aside>
+    <aside class="stage-legend"><strong>攻擊發數：</strong>數字 2 以金色標示兩發攻擊；第 8、9、F 關可能附帶命中降低效果。</aside>
   </section>`;
 }
 
