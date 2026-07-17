@@ -1183,3 +1183,29 @@ html[class*="pc-theme-v"] footer{color:color-mix(in srgb,var(--pc-ink) 80%,#666)
 .stage-bg-badge{display:inline-block;padding:4px 7px;border-radius:999px;background:#fff7c9;border:1px solid #b78300;white-space:nowrap}
 .stage-table-page .stage-legend{margin:10px 0 0}
 @media(max-width:760px){.stage-table-page{padding-top:8px}.stage-table-header{padding:12px}.stage-comparison-table{min-width:1040px}.stage-comparison-table th,.stage-comparison-table td{padding:5px 4px}.stage-table-image{height:72px}.stage-table-sprite{width:58px;height:58px}}
+
+/* v0.67 Stage table alignment fix */
+.stage-comparison-table{width:1280px;min-width:1280px;table-layout:fixed}
+.stage-comparison-table col.stage-col-version{width:86px}
+.stage-comparison-table col.stage-col-round{width:76px}
+.stage-comparison-table col.stage-col-label{width:86px}
+.stage-comparison-table col.stage-col-level{width:103px}
+.stage-comparison-table th,.stage-comparison-table td{box-sizing:border-box;overflow:hidden}
+.stage-comparison-table thead th{height:42px;padding:6px 3px;text-align:center}
+.stage-version-name,.stage-round-name{font-weight:900;line-height:1.35;white-space:normal}
+.stage-version-name{background:linear-gradient(180deg,#fff5c6,#f4d36d);color:#6b4b00}
+.stage-round-name{background:linear-gradient(180deg,#fff8df,#f6e4a7);color:#5f4a18}
+.stage-round-group>tr>th[scope="row"]{width:86px;white-space:nowrap;background:#f8f4e8;font-weight:900}
+.stage-table-image{height:82px;padding:5px!important}
+.stage-table-attack{height:42px;padding:5px 2px!important}
+.stage-table-attack .attack-pattern{display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap}
+.stage-table-attack .attack-step{flex:0 0 22px;width:22px;height:22px;font-size:.76rem;line-height:1}
+.stage-table-status{height:38px}
+.stage-comparison-table tfoot th,.stage-comparison-table tfoot td{height:42px}
+@media(max-width:760px){
+  .stage-comparison-table{width:1240px;min-width:1240px}
+  .stage-comparison-table col.stage-col-version{width:82px}
+  .stage-comparison-table col.stage-col-round{width:72px}
+  .stage-comparison-table col.stage-col-label{width:82px}
+  .stage-comparison-table col.stage-col-level{width:100px}
+}

@@ -644,19 +644,22 @@ function renderStages(){
     return;
   }
   const digimonByNo=new Map(DATA.digimon.map(d=>[Number(d.dex_no),d]));
-  const stageHeaders=Array.from({length:10},(_,i)=>`<th scope="col">第${['一','二','三','四','五','六','七','八','九','十'][i]}關</th>`).join('');
-  const roundRows=STAGE_DATA.rounds.map(round=>{
+  const stageNames=['一','二','三','四','五','六','七','八','九','F'];
+  const stageHeaders=stageNames.map(name=>`<th scope="col">第${name}關</th>`).join('');
+  const totalStageRows=STAGE_DATA.rounds.length*5;
+  const roundRows=STAGE_DATA.rounds.map((round,roundIndex)=>{
     const cells=(rowIndex)=>round.enemies.map((e,i)=>{
       const d=digimonByNo.get(Number(e[0]));
       const attr=e[1],strength=e[2],attack=e[3],status=e[4];
       if(rowIndex===0)return `<td class="stage-table-image ${i===9?'is-boss':''}">${d?sprite(d,'stage-table-sprite'):'<span class="muted">待確認</span>'}</td>`;
       if(rowIndex===1)return `<td><span class="attr-${esc(attr)}">${esc(attr)}</span></td>`;
       if(rowIndex===2)return `<td>${esc(strength)}</td>`;
-      if(rowIndex===3)return `<td class="stage-table-attack">${esc(attack)}</td>`;
+      if(rowIndex===3)return `<td class="stage-table-attack"><span class="attack-pattern">${stageAttackPattern(attack)}</span></td>`;
       return `<td class="stage-table-status">${status==='-'?'-':esc(status)}</td>`;
     }).join('');
+    const versionCell=roundIndex===0?`<th class="stage-version-name" scope="rowgroup" rowspan="${totalStageRows}">${esc(VERSION_LABELS[ACTIVE_VERSION])}</th>`:'';
     return `<tbody class="stage-round-group">
-      <tr><th class="stage-round-name" scope="rowgroup" rowspan="5">${esc(round.label)}</th><th scope="row">圖案</th>${cells(0)}</tr>
+      <tr>${versionCell}<th class="stage-round-name" scope="rowgroup" rowspan="5">${esc(round.label)}</th><th scope="row">圖案</th>${cells(0)}</tr>
       <tr><th scope="row">屬性</th>${cells(1)}</tr>
       <tr><th scope="row">強度</th>${cells(2)}</tr>
       <tr><th scope="row">攻擊發數</th>${cells(3)}</tr>
@@ -668,12 +671,13 @@ function renderStages(){
     <div class="stage-table-header"><div><span class="stage-page-kicker">Pendulum COLOR Battle Area</span><h1>${esc(STAGE_DATA.title)}</h1><p>${esc(STAGE_DATA.note)}</p></div></div>
     <div class="stage-table-scroll">
       <table class="stage-comparison-table">
+        <colgroup><col class="stage-col-version"><col class="stage-col-round"><col class="stage-col-label">${'<col class="stage-col-level">'.repeat(10)}</colgroup>
         <thead><tr><th>版本</th><th>回合數</th><th>敵方資料</th>${stageHeaders}</tr></thead>
         ${roundRows}
         <tfoot><tr><th colspan="2"></th><th>解鎖背景</th>${backgrounds}</tr></tfoot>
       </table>
     </div>
-    <aside class="stage-legend"><strong>攻擊發數：</strong>數字依攻略原始編碼顯示；第 8～10 關可能附帶命中降低效果。</aside>
+    <aside class="stage-legend"><strong>攻擊發數：</strong>圓點中的 1／2 代表每一發攻擊類型；第 8、9、F 關可能附帶命中降低效果。</aside>
   </section>`;
 }
 
