@@ -270,10 +270,12 @@ function renderHome(){
       <h2>DMVault 系列</h2>
       <div class="project-link-grid">
         <a class="project-link-card" href="https://yanbol2001.github.io/DMVault_MH20th/" target="_blank" rel="noopener noreferrer">
-          <span>已公開</span><strong>DMVault MH20th</strong><small>前往網站 ↗</small>
+          <span>已公開</span><strong>DMVault MH20th</strong><small>魔物獵人攻略 ↗</small>
+        </a>
+        <a class="project-link-card" href="https://yanbol2001.github.io/DMVault_Godzilla70th/" target="_blank" rel="noopener noreferrer">
+          <span>已公開</span><strong>DMVault Godzilla 70th</strong><small>哥吉拉攻略 ↗</small>
         </a>
         <div class="project-link-card current"><span>目前網站</span><strong>DMVault Pendulum COLOR</strong><small>V0～V5</small></div>
-        <div class="project-link-card pending"><span>COMING SOON</span><strong>更多 DMVault 作品</strong><small>後續新增</small></div>
       </div>
     </section>
 

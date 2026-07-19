@@ -1457,3 +1457,106 @@ padding:8px 10px;
   }
 }
 
+/* =========================================================
+   v0.81 手機重疊修正＋獨立總覽首頁
+   ========================================================= */
+
+/* 首頁按鈕獨立於 V0～V5 版本列 */
+.home-nav-button{
+  flex:0 0 auto;
+  border:1px solid color-mix(in srgb,var(--pc-frame) 65%,#666);
+  border-radius:8px;
+  padding:7px 12px;
+  background:linear-gradient(180deg,#fff,var(--pc-card-2));
+  color:var(--pc-frame-dark);
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+}
+.home-nav-button.active{
+  background:linear-gradient(180deg,var(--pc-accent),var(--pc-frame-dark));
+  color:#fff;
+  border-color:var(--pc-frame-dark);
+  text-shadow:0 1px 1px #000;
+}
+
+/* 來源卡禁止 sticky，避免手機橫向滑動時覆蓋進化卡 */
+.evolution-sheet .source-panel{
+  position:relative !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  z-index:1 !important;
+  transform:none !important;
+}
+
+/* 每張進化卡都確實佔有自己的 286px，不允許彼此覆蓋 */
+.evolution-sheet .route-area{
+  isolation:isolate !important;
+}
+.evolution-sheet .route-column{
+  position:relative !important;
+  left:auto !important;
+  right:auto !important;
+  transform:none !important;
+  z-index:1 !important;
+  margin:0 !important;
+}
+
+/* hover 位移在觸控裝置可能殘留，手機上關閉 */
+@media(hover:none){
+  .evolution-sheet .route-column:hover{
+    transform:none !important;
+  }
+}
+
+@media(max-width:760px){
+  .topbar{
+    display:grid !important;
+    grid-template-columns:1fr auto !important;
+    gap:7px 8px !important;
+    align-items:center !important;
+    overflow:visible !important;
+  }
+  .topbar .brand{
+    margin:0 !important;
+    min-width:0 !important;
+  }
+  .home-nav-button{
+    grid-column:2 !important;
+    grid-row:1 !important;
+    padding:7px 10px !important;
+  }
+  .topbar .versions{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:auto !important;
+  }
+
+  .evolution-sheet .sheet-row{
+    column-gap:10px !important;
+  }
+  .evolution-sheet .source-panel,
+  .evolution-sheet .route-column{
+    position:relative !important;
+    flex:0 0 286px !important;
+    width:286px !important;
+    min-width:286px !important;
+    max-width:286px !important;
+    margin:0 !important;
+    z-index:1 !important;
+  }
+  .evolution-sheet .route-area{
+    display:flex !important;
+    flex-flow:row nowrap !important;
+    align-items:stretch !important;
+    gap:10px !important;
+    width:max-content !important;
+    min-width:max-content !important;
+    overflow:visible !important;
+  }
+}
+
