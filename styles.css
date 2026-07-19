@@ -1328,3 +1328,132 @@ padding:8px 10px;
 .credit-card h3{margin:0 0 12px;font-size:17px}.credit-name{font-size:22px;font-weight:900;color:var(--pc-accent,#936b13);margin-bottom:8px}.credit-card p{margin:7px 0;line-height:1.65;color:#5c5953}.credit-card a{color:var(--pc-accent,#7d5b10);font-weight:800}.about-footer{max-width:1180px;margin:18px auto 10px;padding:22px;text-align:center;line-height:1.75;color:#6a665f;font-size:13px}.about-footer strong{color:var(--pc-ink,#222);font-size:14px}
 .versions{white-space:nowrap;scrollbar-width:thin}.version{flex:0 0 auto}.sheet-scroll,.stage-table-scroll,.dex-tree-shell{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 @media(max-width:760px){.topbar{align-items:center;flex-wrap:nowrap;overflow:hidden}.versions{min-width:0;flex:1}.about-hero,.about-section{min-width:0;padding:22px 18px}.project-link-grid,.credit-grid{grid-template-columns:1fr}.sheet-scroll{overflow-x:auto}.sheet-row{min-width:max-content}.evolution-sheet{overflow:hidden}.dex-tree-shell{overflow-x:auto}.dex-tree{min-width:980px}.stage-table-scroll{overflow-x:auto}}
+
+/* =========================================================
+   v0.80 統一卡片尺寸與橫向滑動
+   桌機／手機完全共用：來源卡與進化卡固定 286px，
+   永不換行，超出畫面時由整條 sheet-scroll 左右滑動。
+   ========================================================= */
+.evolution-sheet{
+  width:100% !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+
+.evolution-sheet .sheet-scroll{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  padding-bottom:8px !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior-x:contain !important;
+  touch-action:pan-x pan-y !important;
+  scroll-snap-type:x proximity !important;
+}
+
+.evolution-sheet .sheet-row{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  max-width:none !important;
+  gap:10px !important;
+}
+
+.evolution-sheet .source-panel{
+  box-sizing:border-box !important;
+  flex:0 0 286px !important;
+  width:286px !important;
+  min-width:286px !important;
+  max-width:286px !important;
+  scroll-snap-align:start !important;
+}
+
+.evolution-sheet .route-area{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:stretch !important;
+  flex:0 0 auto !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  max-width:none !important;
+  gap:10px !important;
+  overflow:visible !important;
+}
+
+.evolution-sheet .route-column{
+  box-sizing:border-box !important;
+  flex:0 0 286px !important;
+  width:286px !important;
+  min-width:286px !important;
+  max-width:286px !important;
+  scroll-snap-align:start !important;
+}
+
+.evolution-sheet .source-panel *,
+.evolution-sheet .route-column *{
+  min-width:0;
+  max-width:100%;
+}
+
+.evolution-sheet table{
+  width:100% !important;
+  table-layout:fixed !important;
+}
+
+.evolution-sheet th,
+.evolution-sheet td{
+  overflow-wrap:anywhere !important;
+}
+
+/* 手機不再切回 block／單欄；維持與桌機相同結構。 */
+@media(max-width:760px){
+  .evolution-sheet{
+    width:100% !important;
+    max-width:100% !important;
+    overflow:hidden !important;
+  }
+
+  .evolution-sheet .sheet-scroll{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+  }
+
+  .evolution-sheet .sheet-row{
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    width:max-content !important;
+    min-width:max-content !important;
+    max-width:none !important;
+  }
+
+  .evolution-sheet .source-panel,
+  .evolution-sheet .route-column{
+    flex:0 0 286px !important;
+    width:286px !important;
+    min-width:286px !important;
+    max-width:286px !important;
+  }
+
+  .evolution-sheet .route-area{
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    width:max-content !important;
+    min-width:max-content !important;
+    max-width:none !important;
+    grid-template-columns:none !important;
+  }
+}
+
